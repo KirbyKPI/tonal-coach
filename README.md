@@ -12,6 +12,7 @@
 
 <p align="center">
   <a href="https://github.com/JeffOtano/tonal-coach/actions/workflows/ci.yml"><img src="https://github.com/JeffOtano/tonal-coach/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://github.com/JeffOtano/tonal-coach/releases/latest"><img src="https://img.shields.io/github/v/release/JeffOtano/tonal-coach?label=release&color=blue" alt="Latest release" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <a href="tsconfig.json"><img src="https://img.shields.io/badge/TypeScript-strict-3178c6.svg" alt="TypeScript" /></a>
   <a href="#testing"><img src="https://img.shields.io/badge/tests-Vitest-6E9F18.svg" alt="Vitest" /></a>
