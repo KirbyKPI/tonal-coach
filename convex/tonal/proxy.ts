@@ -124,7 +124,7 @@ export const fetchUserProfile = internalAction({
     withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<TonalUser>(ctx, {
         userId,
-        dataType: "profile",
+        dataType: `profile:${tonalUserId}`,
         ttl: CACHE_TTLS.profile,
         fetcher: () => tonalFetch<TonalUser>(token, `/v6/users/${tonalUserId}`),
       }),
@@ -137,7 +137,7 @@ export const fetchStrengthScores = internalAction({
     withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<StrengthScore[]>(ctx, {
         userId,
-        dataType: "strengthScores",
+        dataType: `strengthScores:${tonalUserId}`,
         ttl: CACHE_TTLS.strengthScores,
         fetcher: () =>
           tonalFetch<StrengthScore[]>(token, `/v6/users/${tonalUserId}/strength-scores/current`),
@@ -151,7 +151,7 @@ export const fetchStrengthDistribution = internalAction({
     withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<StrengthDistribution>(ctx, {
         userId,
-        dataType: "strengthDistribution",
+        dataType: `strengthDistribution:${tonalUserId}`,
         ttl: CACHE_TTLS.strengthDistribution,
         fetcher: () =>
           tonalFetch<StrengthDistribution>(
@@ -168,7 +168,7 @@ export const fetchStrengthHistory = internalAction({
     withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<StrengthScoreHistoryEntry[]>(ctx, {
         userId,
-        dataType: "strengthHistory",
+        dataType: `strengthHistory:${tonalUserId}`,
         ttl: CACHE_TTLS.strengthHistory,
         fetcher: () =>
           tonalFetch<StrengthScoreHistoryEntry[]>(
@@ -185,7 +185,7 @@ export const fetchMuscleReadiness = internalAction({
     withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<MuscleReadiness>(ctx, {
         userId,
-        dataType: "muscleReadiness",
+        dataType: `muscleReadiness:${tonalUserId}`,
         ttl: CACHE_TTLS.muscleReadiness,
         fetcher: () =>
           tonalFetch<MuscleReadiness>(token, `/v6/users/${tonalUserId}/muscle-readiness/current`),
@@ -202,7 +202,7 @@ export const fetchWorkoutHistory = internalAction({
     withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<Activity[]>(ctx, {
         userId,
-        dataType: `workoutHistory:${limit}`,
+        dataType: `workoutHistory:${tonalUserId}:${limit}`,
         ttl: CACHE_TTLS.workoutHistory,
         fetcher: () =>
           tonalFetch<Activity[]>(token, `/v6/users/${tonalUserId}/activities?limit=${limit}`),
@@ -228,7 +228,7 @@ export const fetchWorkoutDetail = internalAction({
     const result = await withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<WorkoutActivityDetail | null>(ctx, {
         userId,
-        dataType: `workoutDetail:${activityId}`,
+        dataType: `workoutDetail:${tonalUserId}:${activityId}`,
         ttl: CACHE_TTLS.workoutHistory,
         fetcher: async () => {
           try {
@@ -260,7 +260,7 @@ export const fetchFormattedSummary = internalAction({
     withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<FormattedWorkoutSummary>(ctx, {
         userId,
-        dataType: `formattedSummary:${summaryId}`,
+        dataType: `formattedSummary:${tonalUserId}:${summaryId}`,
         ttl: CACHE_TTLS.workoutHistory,
         fetcher: () =>
           tonalFetch<FormattedWorkoutSummary>(
@@ -274,10 +274,10 @@ export const fetchFormattedSummary = internalAction({
 export const fetchCustomWorkouts = internalAction({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }): Promise<UserWorkout[]> =>
-    withTokenRetry(ctx, userId, (token) =>
+    withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<UserWorkout[]>(ctx, {
         userId,
-        dataType: "customWorkouts",
+        dataType: `customWorkouts:${tonalUserId}`,
         ttl: CACHE_TTLS.customWorkouts,
         fetcher: () => tonalFetch<UserWorkout[]>(token, `/v6/user-workouts`),
       }),
@@ -293,7 +293,7 @@ export const fetchExternalActivities = internalAction({
     withTokenRetry(ctx, userId, (token, tonalUserId) =>
       cachedFetch<ExternalActivity[]>(ctx, {
         userId,
-        dataType: `externalActivities:${limit}`,
+        dataType: `externalActivities:${tonalUserId}:${limit}`,
         ttl: CACHE_TTLS.workoutHistory,
         fetcher: () =>
           tonalFetch<ExternalActivity[]>(

@@ -15,10 +15,17 @@ export const CACHE_TTLS: Record<string, number> = {
 export const getUserProfile = internalQuery({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
+    // Multi-client: respect the active profile selection (mirrors users.ts logic)
+    const user = await ctx.db.get(userId);
+    if (user?.activeClientProfileId) {
+      const active = await ctx.db.get(user.activeClientProfileId);
+      if (active && active.userId === userId) return active;
+    }
+    // Fall back to the first profile (preserves single-user behavior)
     return ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
   },
 });
 
