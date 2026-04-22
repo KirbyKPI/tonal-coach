@@ -19,6 +19,8 @@ export default defineSchema({
     phone: v.optional(v.string()),
     phoneVerificationTime: v.optional(v.number()),
     isAnonymous: v.optional(v.boolean()),
+    /** Which client profile the coach currently has active. */
+    activeClientProfileId: v.optional(v.id("userProfiles")),
   })
     .index("email", ["email"])
     .index("phone", ["phone"]),
@@ -46,6 +48,10 @@ export default defineSchema({
         tonalCreatedAt: v.optional(v.string()),
       }),
     ),
+    /** Human-readable label the coach gave this client slot, e.g. "Jane Smith". */
+    clientLabel: v.optional(v.string()),
+    /** True when this profile was added by a coach on behalf of a client. */
+    isCoachAccount: v.optional(v.boolean()),
     lastActiveAt: v.number(),
     /** When the user first connected their Tonal account (signup for activation analytics). */
     tonalConnectedAt: v.optional(v.number()),

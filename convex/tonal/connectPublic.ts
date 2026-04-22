@@ -6,10 +6,12 @@ export const connectTonal = action({
   args: {
     tonalEmail: v.string(),
     tonalPassword: v.string(),
+    /** When connecting a specific client profile, pass its ID to patch instead of upsert. */
+    profileId: v.optional(v.id("userProfiles")),
   },
   handler: async (
     ctx,
-    { tonalEmail, tonalPassword },
+    { tonalEmail, tonalPassword, profileId },
   ): Promise<{ success: boolean; tonalUserId: string }> => {
     const userId = await ctx.runQuery(internal.lib.auth.resolveEffectiveUserId, {});
     if (!userId) throw new Error("Not authenticated");
@@ -18,6 +20,7 @@ export const connectTonal = action({
       userId,
       tonalEmail,
       tonalPassword,
+      profileId,
     });
   },
 });

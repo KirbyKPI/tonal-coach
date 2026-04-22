@@ -36,6 +36,7 @@ import type * as chat from "../chat.js";
 import type * as checkIns from "../checkIns.js";
 import type * as checkIns_content from "../checkIns/content.js";
 import type * as checkIns_triggers from "../checkIns/triggers.js";
+import type * as clientProfiles from "../clientProfiles.js";
 import type * as coach_exerciseSelection from "../coach/exerciseSelection.js";
 import type * as coach_goalConfig from "../coach/goalConfig.js";
 import type * as coach_missedSessionDetection from "../coach/missedSessionDetection.js";
@@ -46,6 +47,7 @@ import type * as coach_weekModifications from "../coach/weekModifications.js";
 import type * as coach_weekProgramming from "../coach/weekProgramming.js";
 import type * as coach_weekProgrammingDirect from "../coach/weekProgrammingDirect.js";
 import type * as coach_weekProgrammingHelpers from "../coach/weekProgrammingHelpers.js";
+import type * as coachDashboard from "../coachDashboard.js";
 import type * as contact from "../contact.js";
 import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
@@ -63,6 +65,7 @@ import type * as injuries from "../injuries.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_posthog from "../lib/posthog.js";
 import type * as libraryWorkouts from "../libraryWorkouts.js";
+import type * as migrations_mergeDuplicateCoachByEmail from "../migrations/mergeDuplicateCoachByEmail.js";
 import type * as migrations_rotateTokenEncryptionKey from "../migrations/rotateTokenEncryptionKey.js";
 import type * as progressiveOverload from "../progressiveOverload.js";
 import type * as rateLimits from "../rateLimits.js";
@@ -78,6 +81,7 @@ import type * as tonal_client from "../tonal/client.js";
 import type * as tonal_connect from "../tonal/connect.js";
 import type * as tonal_connectPublic from "../tonal/connectPublic.js";
 import type * as tonal_encryption from "../tonal/encryption.js";
+import type * as tonal_enrichmentSync from "../tonal/enrichmentSync.js";
 import type * as tonal_hardware from "../tonal/hardware.js";
 import type * as tonal_historySync from "../tonal/historySync.js";
 import type * as tonal_historySyncMutations from "../tonal/historySyncMutations.js";
@@ -109,7 +113,11 @@ import type * as workoutDetail from "../workoutDetail.js";
 import type * as workoutFeedback from "../workoutFeedback.js";
 import type * as workoutPlans from "../workoutPlans.js";
 
-import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 
 declare const fullApi: ApiFromModules<{
   ResendOTP: typeof ResendOTP;
@@ -140,6 +148,7 @@ declare const fullApi: ApiFromModules<{
   checkIns: typeof checkIns;
   "checkIns/content": typeof checkIns_content;
   "checkIns/triggers": typeof checkIns_triggers;
+  clientProfiles: typeof clientProfiles;
   "coach/exerciseSelection": typeof coach_exerciseSelection;
   "coach/goalConfig": typeof coach_goalConfig;
   "coach/missedSessionDetection": typeof coach_missedSessionDetection;
@@ -150,6 +159,7 @@ declare const fullApi: ApiFromModules<{
   "coach/weekProgramming": typeof coach_weekProgramming;
   "coach/weekProgrammingDirect": typeof coach_weekProgrammingDirect;
   "coach/weekProgrammingHelpers": typeof coach_weekProgrammingHelpers;
+  coachDashboard: typeof coachDashboard;
   contact: typeof contact;
   crons: typeof crons;
   dashboard: typeof dashboard;
@@ -167,6 +177,7 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/posthog": typeof lib_posthog;
   libraryWorkouts: typeof libraryWorkouts;
+  "migrations/mergeDuplicateCoachByEmail": typeof migrations_mergeDuplicateCoachByEmail;
   "migrations/rotateTokenEncryptionKey": typeof migrations_rotateTokenEncryptionKey;
   progressiveOverload: typeof progressiveOverload;
   rateLimits: typeof rateLimits;
@@ -182,6 +193,7 @@ declare const fullApi: ApiFromModules<{
   "tonal/connect": typeof tonal_connect;
   "tonal/connectPublic": typeof tonal_connectPublic;
   "tonal/encryption": typeof tonal_encryption;
+  "tonal/enrichmentSync": typeof tonal_enrichmentSync;
   "tonal/hardware": typeof tonal_hardware;
   "tonal/historySync": typeof tonal_historySync;
   "tonal/historySyncMutations": typeof tonal_historySyncMutations;
@@ -222,7 +234,10 @@ declare const fullApi: ApiFromModules<{
  * const myFunctionReference = api.myModule.myFunction;
  * ```
  */
-export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "public">>;
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
 
 /**
  * A utility for referencing Convex functions in your app's internal API.
@@ -232,7 +247,10 @@ export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "publ
  * const myFunctionReference = internal.myModule.myFunction;
  * ```
  */
-export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, "internal">>;
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;
 
 export declare const components: {
   agent: {
@@ -241,10 +259,23 @@ export declare const components: {
         "mutation",
         "internal",
         { apiKey?: string; name?: string },
-        "missing" | "deleted" | "name mismatch" | "must provide either apiKey or name"
+        | "missing"
+        | "deleted"
+        | "name mismatch"
+        | "must provide either apiKey or name"
       >;
-      issue: FunctionReference<"mutation", "internal", { name?: string }, string>;
-      validate: FunctionReference<"query", "internal", { apiKey: string }, boolean>;
+      issue: FunctionReference<
+        "mutation",
+        "internal",
+        { name?: string },
+        string
+      >;
+      validate: FunctionReference<
+        "query",
+        "internal",
+        { apiKey: string },
+        boolean
+      >;
     };
     files: {
       addFile: FunctionReference<
@@ -259,7 +290,12 @@ export declare const components: {
         },
         { fileId: string; storageId: string }
       >;
-      copyFile: FunctionReference<"mutation", "internal", { fileId: string }, null>;
+      copyFile: FunctionReference<
+        "mutation",
+        "internal",
+        { fileId: string },
+        null
+      >;
       deleteFiles: FunctionReference<
         "mutation",
         "internal",
@@ -325,7 +361,17 @@ export declare const components: {
         {
           agentName?: string;
           embeddings?: {
-            dimension: 128 | 256 | 512 | 768 | 1024 | 1408 | 1536 | 2048 | 3072 | 4096;
+            dimension:
+              | 128
+              | 256
+              | 512
+              | 768
+              | 1024
+              | 1408
+              | 1536
+              | 2048
+              | 3072
+              | 4096;
             model: string;
             vectors: Array<Array<number> | null>;
           };
@@ -349,8 +395,14 @@ export declare const components: {
                     | string
                     | Array<
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             text: string;
                             type: "text";
                           }
@@ -358,7 +410,10 @@ export declare const components: {
                             image: string | ArrayBuffer;
                             mediaType?: string;
                             mimeType?: string;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "image";
                           }
                         | {
@@ -366,8 +421,14 @@ export declare const components: {
                             filename?: string;
                             mediaType?: string;
                             mimeType?: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "file";
                           }
                       >;
@@ -379,8 +440,14 @@ export declare const components: {
                     | string
                     | Array<
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             text: string;
                             type: "text";
                           }
@@ -389,29 +456,53 @@ export declare const components: {
                             filename?: string;
                             mediaType?: string;
                             mimeType?: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "file";
                           }
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             signature?: string;
                             text: string;
                             type: "reasoning";
                           }
                         | {
                             data: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "redacted-reasoning";
                           }
                         | {
                             args?: any;
                             input: any;
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             toolName: string;
                             type: "tool-call";
@@ -420,8 +511,14 @@ export declare const components: {
                             args: any;
                             input?: any;
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             toolName: string;
                             type: "tool-call";
@@ -439,27 +536,42 @@ export declare const components: {
                             isError?: boolean;
                             output?:
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "text";
                                   value: string;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "json";
                                   value: any;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "error-text";
                                   value: string;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "error-json";
                                   value: any;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   reason?: string;
                                   type: "execution-denied";
                                 }
@@ -467,7 +579,10 @@ export declare const components: {
                                   type: "content";
                                   value: Array<
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         text: string;
                                         type: "text";
                                       }
@@ -480,44 +595,71 @@ export declare const components: {
                                         data: string;
                                         filename?: string;
                                         mediaType: string;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-data";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-url";
                                         url: string;
                                       }
                                     | {
                                         fileId: string | Record<string, string>;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-id";
                                       }
                                     | {
                                         data: string;
                                         mediaType: string;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-data";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-url";
                                         url: string;
                                       }
                                     | {
                                         fileId: string | Record<string, string>;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-file-id";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "custom";
                                       }
                                   >;
                                 };
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             result?: any;
                             toolCallId: string;
                             toolName: string;
@@ -525,8 +667,14 @@ export declare const components: {
                           }
                         | {
                             id: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             sourceType: "url";
                             title?: string;
                             type: "source";
@@ -536,16 +684,28 @@ export declare const components: {
                             filename?: string;
                             id: string;
                             mediaType: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             sourceType: "document";
                             title: string;
                             type: "source";
                           }
                         | {
                             approvalId: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             type: "tool-approval-request";
                           }
@@ -564,27 +724,42 @@ export declare const components: {
                         isError?: boolean;
                         output?:
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "text";
                               value: string;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "json";
                               value: any;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "error-text";
                               value: string;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "error-json";
                               value: any;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               reason?: string;
                               type: "execution-denied";
                             }
@@ -592,7 +767,10 @@ export declare const components: {
                               type: "content";
                               value: Array<
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     text: string;
                                     type: "text";
                                   }
@@ -605,37 +783,58 @@ export declare const components: {
                                     data: string;
                                     filename?: string;
                                     mediaType: string;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-data";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-url";
                                     url: string;
                                   }
                                 | {
                                     fileId: string | Record<string, string>;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-id";
                                   }
                                 | {
                                     data: string;
                                     mediaType: string;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-data";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-url";
                                     url: string;
                                   }
                                 | {
                                     fileId: string | Record<string, string>;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-file-id";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "custom";
                                   }
                               >;
@@ -749,8 +948,14 @@ export declare const components: {
                     | string
                     | Array<
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             text: string;
                             type: "text";
                           }
@@ -758,7 +963,10 @@ export declare const components: {
                             image: string | ArrayBuffer;
                             mediaType?: string;
                             mimeType?: string;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "image";
                           }
                         | {
@@ -766,8 +974,14 @@ export declare const components: {
                             filename?: string;
                             mediaType?: string;
                             mimeType?: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "file";
                           }
                       >;
@@ -779,8 +993,14 @@ export declare const components: {
                     | string
                     | Array<
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             text: string;
                             type: "text";
                           }
@@ -789,29 +1009,53 @@ export declare const components: {
                             filename?: string;
                             mediaType?: string;
                             mimeType?: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "file";
                           }
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             signature?: string;
                             text: string;
                             type: "reasoning";
                           }
                         | {
                             data: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "redacted-reasoning";
                           }
                         | {
                             args?: any;
                             input: any;
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             toolName: string;
                             type: "tool-call";
@@ -820,8 +1064,14 @@ export declare const components: {
                             args: any;
                             input?: any;
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             toolName: string;
                             type: "tool-call";
@@ -839,27 +1089,42 @@ export declare const components: {
                             isError?: boolean;
                             output?:
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "text";
                                   value: string;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "json";
                                   value: any;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "error-text";
                                   value: string;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "error-json";
                                   value: any;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   reason?: string;
                                   type: "execution-denied";
                                 }
@@ -867,7 +1132,10 @@ export declare const components: {
                                   type: "content";
                                   value: Array<
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         text: string;
                                         type: "text";
                                       }
@@ -880,44 +1148,71 @@ export declare const components: {
                                         data: string;
                                         filename?: string;
                                         mediaType: string;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-data";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-url";
                                         url: string;
                                       }
                                     | {
                                         fileId: string | Record<string, string>;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-id";
                                       }
                                     | {
                                         data: string;
                                         mediaType: string;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-data";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-url";
                                         url: string;
                                       }
                                     | {
                                         fileId: string | Record<string, string>;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-file-id";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "custom";
                                       }
                                   >;
                                 };
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             result?: any;
                             toolCallId: string;
                             toolName: string;
@@ -925,8 +1220,14 @@ export declare const components: {
                           }
                         | {
                             id: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             sourceType: "url";
                             title?: string;
                             type: "source";
@@ -936,16 +1237,28 @@ export declare const components: {
                             filename?: string;
                             id: string;
                             mediaType: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             sourceType: "document";
                             title: string;
                             type: "source";
                           }
                         | {
                             approvalId: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             type: "tool-approval-request";
                           }
@@ -964,27 +1277,42 @@ export declare const components: {
                         isError?: boolean;
                         output?:
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "text";
                               value: string;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "json";
                               value: any;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "error-text";
                               value: string;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "error-json";
                               value: any;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               reason?: string;
                               type: "execution-denied";
                             }
@@ -992,7 +1320,10 @@ export declare const components: {
                               type: "content";
                               value: Array<
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     text: string;
                                     type: "text";
                                   }
@@ -1005,37 +1336,58 @@ export declare const components: {
                                     data: string;
                                     filename?: string;
                                     mediaType: string;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-data";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-url";
                                     url: string;
                                   }
                                 | {
                                     fileId: string | Record<string, string>;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-id";
                                   }
                                 | {
                                     data: string;
                                     mediaType: string;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-data";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-url";
                                     url: string;
                                   }
                                 | {
                                     fileId: string | Record<string, string>;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-file-id";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "custom";
                                   }
                               >;
@@ -1198,7 +1550,10 @@ export declare const components: {
                   | string
                   | Array<
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           text: string;
                           type: "text";
@@ -1215,7 +1570,10 @@ export declare const components: {
                           filename?: string;
                           mediaType?: string;
                           mimeType?: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "file";
                         }
@@ -1228,7 +1586,10 @@ export declare const components: {
                   | string
                   | Array<
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           text: string;
                           type: "text";
@@ -1238,12 +1599,18 @@ export declare const components: {
                           filename?: string;
                           mediaType?: string;
                           mimeType?: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "file";
                         }
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           signature?: string;
                           text: string;
@@ -1251,7 +1618,10 @@ export declare const components: {
                         }
                       | {
                           data: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "redacted-reasoning";
                         }
@@ -1259,7 +1629,10 @@ export declare const components: {
                           args?: any;
                           input: any;
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           toolName: string;
@@ -1269,7 +1642,10 @@ export declare const components: {
                           args: any;
                           input?: any;
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           toolName: string;
@@ -1284,27 +1660,42 @@ export declare const components: {
                           isError?: boolean;
                           output?:
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "text";
                                 value: string;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "json";
                                 value: any;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "error-text";
                                 value: string;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "error-json";
                                 value: any;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 reason?: string;
                                 type: "execution-denied";
                               }
@@ -1312,7 +1703,10 @@ export declare const components: {
                                 type: "content";
                                 value: Array<
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       text: string;
                                       type: "text";
                                     }
@@ -1325,43 +1719,67 @@ export declare const components: {
                                       data: string;
                                       filename?: string;
                                       mediaType: string;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-data";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-url";
                                       url: string;
                                     }
                                   | {
                                       fileId: string | Record<string, string>;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-id";
                                     }
                                   | {
                                       data: string;
                                       mediaType: string;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-data";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-url";
                                       url: string;
                                     }
                                   | {
                                       fileId: string | Record<string, string>;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-file-id";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "custom";
                                     }
                                 >;
                               };
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           result?: any;
                           toolCallId: string;
@@ -1370,7 +1788,10 @@ export declare const components: {
                         }
                       | {
                           id: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "url";
                           title?: string;
@@ -1381,7 +1802,10 @@ export declare const components: {
                           filename?: string;
                           id: string;
                           mediaType: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "document";
                           title: string;
@@ -1389,7 +1813,10 @@ export declare const components: {
                         }
                       | {
                           approvalId: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           type: "tool-approval-request";
@@ -1409,27 +1836,42 @@ export declare const components: {
                       isError?: boolean;
                       output?:
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "text";
                             value: string;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "json";
                             value: any;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "error-text";
                             value: string;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "error-json";
                             value: any;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             reason?: string;
                             type: "execution-denied";
                           }
@@ -1437,7 +1879,10 @@ export declare const components: {
                             type: "content";
                             value: Array<
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   text: string;
                                   type: "text";
                                 }
@@ -1450,37 +1895,58 @@ export declare const components: {
                                   data: string;
                                   filename?: string;
                                   mediaType: string;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-data";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-url";
                                   url: string;
                                 }
                               | {
                                   fileId: string | Record<string, string>;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-id";
                                 }
                               | {
                                   data: string;
                                   mediaType: string;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-data";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-url";
                                   url: string;
                                 }
                               | {
                                   fileId: string | Record<string, string>;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-file-id";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "custom";
                                 }
                             >;
@@ -1618,8 +2084,14 @@ export declare const components: {
                     | string
                     | Array<
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             text: string;
                             type: "text";
                           }
@@ -1627,7 +2099,10 @@ export declare const components: {
                             image: string | ArrayBuffer;
                             mediaType?: string;
                             mimeType?: string;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "image";
                           }
                         | {
@@ -1635,8 +2110,14 @@ export declare const components: {
                             filename?: string;
                             mediaType?: string;
                             mimeType?: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "file";
                           }
                       >;
@@ -1648,8 +2129,14 @@ export declare const components: {
                     | string
                     | Array<
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             text: string;
                             type: "text";
                           }
@@ -1658,29 +2145,53 @@ export declare const components: {
                             filename?: string;
                             mediaType?: string;
                             mimeType?: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "file";
                           }
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             signature?: string;
                             text: string;
                             type: "reasoning";
                           }
                         | {
                             data: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "redacted-reasoning";
                           }
                         | {
                             args?: any;
                             input: any;
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             toolName: string;
                             type: "tool-call";
@@ -1689,8 +2200,14 @@ export declare const components: {
                             args: any;
                             input?: any;
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             toolName: string;
                             type: "tool-call";
@@ -1708,27 +2225,42 @@ export declare const components: {
                             isError?: boolean;
                             output?:
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "text";
                                   value: string;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "json";
                                   value: any;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "error-text";
                                   value: string;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "error-json";
                                   value: any;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   reason?: string;
                                   type: "execution-denied";
                                 }
@@ -1736,7 +2268,10 @@ export declare const components: {
                                   type: "content";
                                   value: Array<
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         text: string;
                                         type: "text";
                                       }
@@ -1749,44 +2284,71 @@ export declare const components: {
                                         data: string;
                                         filename?: string;
                                         mediaType: string;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-data";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-url";
                                         url: string;
                                       }
                                     | {
                                         fileId: string | Record<string, string>;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-id";
                                       }
                                     | {
                                         data: string;
                                         mediaType: string;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-data";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-url";
                                         url: string;
                                       }
                                     | {
                                         fileId: string | Record<string, string>;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-file-id";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "custom";
                                       }
                                   >;
                                 };
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             result?: any;
                             toolCallId: string;
                             toolName: string;
@@ -1794,8 +2356,14 @@ export declare const components: {
                           }
                         | {
                             id: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             sourceType: "url";
                             title?: string;
                             type: "source";
@@ -1805,16 +2373,28 @@ export declare const components: {
                             filename?: string;
                             id: string;
                             mediaType: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             sourceType: "document";
                             title: string;
                             type: "source";
                           }
                         | {
                             approvalId: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             type: "tool-approval-request";
                           }
@@ -1833,27 +2413,42 @@ export declare const components: {
                         isError?: boolean;
                         output?:
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "text";
                               value: string;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "json";
                               value: any;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "error-text";
                               value: string;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "error-json";
                               value: any;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               reason?: string;
                               type: "execution-denied";
                             }
@@ -1861,7 +2456,10 @@ export declare const components: {
                               type: "content";
                               value: Array<
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     text: string;
                                     type: "text";
                                   }
@@ -1874,37 +2472,58 @@ export declare const components: {
                                     data: string;
                                     filename?: string;
                                     mediaType: string;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-data";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-url";
                                     url: string;
                                   }
                                 | {
                                     fileId: string | Record<string, string>;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-id";
                                   }
                                 | {
                                     data: string;
                                     mediaType: string;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-data";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-url";
                                     url: string;
                                   }
                                 | {
                                     fileId: string | Record<string, string>;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-file-id";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "custom";
                                   }
                               >;
@@ -2038,7 +2657,10 @@ export declare const components: {
                   | string
                   | Array<
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           text: string;
                           type: "text";
@@ -2055,7 +2677,10 @@ export declare const components: {
                           filename?: string;
                           mediaType?: string;
                           mimeType?: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "file";
                         }
@@ -2068,7 +2693,10 @@ export declare const components: {
                   | string
                   | Array<
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           text: string;
                           type: "text";
@@ -2078,12 +2706,18 @@ export declare const components: {
                           filename?: string;
                           mediaType?: string;
                           mimeType?: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "file";
                         }
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           signature?: string;
                           text: string;
@@ -2091,7 +2725,10 @@ export declare const components: {
                         }
                       | {
                           data: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "redacted-reasoning";
                         }
@@ -2099,7 +2736,10 @@ export declare const components: {
                           args?: any;
                           input: any;
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           toolName: string;
@@ -2109,7 +2749,10 @@ export declare const components: {
                           args: any;
                           input?: any;
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           toolName: string;
@@ -2124,27 +2767,42 @@ export declare const components: {
                           isError?: boolean;
                           output?:
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "text";
                                 value: string;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "json";
                                 value: any;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "error-text";
                                 value: string;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "error-json";
                                 value: any;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 reason?: string;
                                 type: "execution-denied";
                               }
@@ -2152,7 +2810,10 @@ export declare const components: {
                                 type: "content";
                                 value: Array<
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       text: string;
                                       type: "text";
                                     }
@@ -2165,43 +2826,67 @@ export declare const components: {
                                       data: string;
                                       filename?: string;
                                       mediaType: string;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-data";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-url";
                                       url: string;
                                     }
                                   | {
                                       fileId: string | Record<string, string>;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-id";
                                     }
                                   | {
                                       data: string;
                                       mediaType: string;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-data";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-url";
                                       url: string;
                                     }
                                   | {
                                       fileId: string | Record<string, string>;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-file-id";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "custom";
                                     }
                                 >;
                               };
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           result?: any;
                           toolCallId: string;
@@ -2210,7 +2895,10 @@ export declare const components: {
                         }
                       | {
                           id: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "url";
                           title?: string;
@@ -2221,7 +2909,10 @@ export declare const components: {
                           filename?: string;
                           id: string;
                           mediaType: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "document";
                           title: string;
@@ -2229,7 +2920,10 @@ export declare const components: {
                         }
                       | {
                           approvalId: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           type: "tool-approval-request";
@@ -2249,27 +2943,42 @@ export declare const components: {
                       isError?: boolean;
                       output?:
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "text";
                             value: string;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "json";
                             value: any;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "error-text";
                             value: string;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "error-json";
                             value: any;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             reason?: string;
                             type: "execution-denied";
                           }
@@ -2277,7 +2986,10 @@ export declare const components: {
                             type: "content";
                             value: Array<
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   text: string;
                                   type: "text";
                                 }
@@ -2290,37 +3002,58 @@ export declare const components: {
                                   data: string;
                                   filename?: string;
                                   mediaType: string;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-data";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-url";
                                   url: string;
                                 }
                               | {
                                   fileId: string | Record<string, string>;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-id";
                                 }
                               | {
                                   data: string;
                                   mediaType: string;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-data";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-url";
                                   url: string;
                                 }
                               | {
                                   fileId: string | Record<string, string>;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-file-id";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "custom";
                                 }
                             >;
@@ -2441,7 +3174,10 @@ export declare const components: {
                   | string
                   | Array<
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           text: string;
                           type: "text";
@@ -2458,7 +3194,10 @@ export declare const components: {
                           filename?: string;
                           mediaType?: string;
                           mimeType?: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "file";
                         }
@@ -2471,7 +3210,10 @@ export declare const components: {
                   | string
                   | Array<
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           text: string;
                           type: "text";
@@ -2481,12 +3223,18 @@ export declare const components: {
                           filename?: string;
                           mediaType?: string;
                           mimeType?: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "file";
                         }
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           signature?: string;
                           text: string;
@@ -2494,7 +3242,10 @@ export declare const components: {
                         }
                       | {
                           data: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "redacted-reasoning";
                         }
@@ -2502,7 +3253,10 @@ export declare const components: {
                           args?: any;
                           input: any;
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           toolName: string;
@@ -2512,7 +3266,10 @@ export declare const components: {
                           args: any;
                           input?: any;
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           toolName: string;
@@ -2527,27 +3284,42 @@ export declare const components: {
                           isError?: boolean;
                           output?:
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "text";
                                 value: string;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "json";
                                 value: any;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "error-text";
                                 value: string;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "error-json";
                                 value: any;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 reason?: string;
                                 type: "execution-denied";
                               }
@@ -2555,7 +3327,10 @@ export declare const components: {
                                 type: "content";
                                 value: Array<
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       text: string;
                                       type: "text";
                                     }
@@ -2568,43 +3343,67 @@ export declare const components: {
                                       data: string;
                                       filename?: string;
                                       mediaType: string;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-data";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-url";
                                       url: string;
                                     }
                                   | {
                                       fileId: string | Record<string, string>;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-id";
                                     }
                                   | {
                                       data: string;
                                       mediaType: string;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-data";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-url";
                                       url: string;
                                     }
                                   | {
                                       fileId: string | Record<string, string>;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-file-id";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "custom";
                                     }
                                 >;
                               };
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           result?: any;
                           toolCallId: string;
@@ -2613,7 +3412,10 @@ export declare const components: {
                         }
                       | {
                           id: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "url";
                           title?: string;
@@ -2624,7 +3426,10 @@ export declare const components: {
                           filename?: string;
                           id: string;
                           mediaType: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "document";
                           title: string;
@@ -2632,7 +3437,10 @@ export declare const components: {
                         }
                       | {
                           approvalId: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           type: "tool-approval-request";
@@ -2652,27 +3460,42 @@ export declare const components: {
                       isError?: boolean;
                       output?:
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "text";
                             value: string;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "json";
                             value: any;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "error-text";
                             value: string;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "error-json";
                             value: any;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             reason?: string;
                             type: "execution-denied";
                           }
@@ -2680,7 +3503,10 @@ export declare const components: {
                             type: "content";
                             value: Array<
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   text: string;
                                   type: "text";
                                 }
@@ -2693,37 +3519,58 @@ export declare const components: {
                                   data: string;
                                   filename?: string;
                                   mediaType: string;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-data";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-url";
                                   url: string;
                                 }
                               | {
                                   fileId: string | Record<string, string>;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-id";
                                 }
                               | {
                                   data: string;
                                   mediaType: string;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-data";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-url";
                                   url: string;
                                 }
                               | {
                                   fileId: string | Record<string, string>;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-file-id";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "custom";
                                 }
                             >;
@@ -2834,8 +3681,14 @@ export declare const components: {
                     | string
                     | Array<
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             text: string;
                             type: "text";
                           }
@@ -2843,7 +3696,10 @@ export declare const components: {
                             image: string | ArrayBuffer;
                             mediaType?: string;
                             mimeType?: string;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "image";
                           }
                         | {
@@ -2851,8 +3707,14 @@ export declare const components: {
                             filename?: string;
                             mediaType?: string;
                             mimeType?: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "file";
                           }
                       >;
@@ -2864,8 +3726,14 @@ export declare const components: {
                     | string
                     | Array<
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             text: string;
                             type: "text";
                           }
@@ -2874,29 +3742,53 @@ export declare const components: {
                             filename?: string;
                             mediaType?: string;
                             mimeType?: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "file";
                           }
                         | {
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             signature?: string;
                             text: string;
                             type: "reasoning";
                           }
                         | {
                             data: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "redacted-reasoning";
                           }
                         | {
                             args?: any;
                             input: any;
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             toolName: string;
                             type: "tool-call";
@@ -2905,8 +3797,14 @@ export declare const components: {
                             args: any;
                             input?: any;
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             toolName: string;
                             type: "tool-call";
@@ -2924,27 +3822,42 @@ export declare const components: {
                             isError?: boolean;
                             output?:
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "text";
                                   value: string;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "json";
                                   value: any;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "error-text";
                                   value: string;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "error-json";
                                   value: any;
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   reason?: string;
                                   type: "execution-denied";
                                 }
@@ -2952,7 +3865,10 @@ export declare const components: {
                                   type: "content";
                                   value: Array<
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         text: string;
                                         type: "text";
                                       }
@@ -2965,44 +3881,71 @@ export declare const components: {
                                         data: string;
                                         filename?: string;
                                         mediaType: string;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-data";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-url";
                                         url: string;
                                       }
                                     | {
                                         fileId: string | Record<string, string>;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "file-id";
                                       }
                                     | {
                                         data: string;
                                         mediaType: string;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-data";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-url";
                                         url: string;
                                       }
                                     | {
                                         fileId: string | Record<string, string>;
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "image-file-id";
                                       }
                                     | {
-                                        providerOptions?: Record<string, Record<string, any>>;
+                                        providerOptions?: Record<
+                                          string,
+                                          Record<string, any>
+                                        >;
                                         type: "custom";
                                       }
                                   >;
                                 };
                             providerExecuted?: boolean;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             result?: any;
                             toolCallId: string;
                             toolName: string;
@@ -3010,8 +3953,14 @@ export declare const components: {
                           }
                         | {
                             id: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             sourceType: "url";
                             title?: string;
                             type: "source";
@@ -3021,16 +3970,28 @@ export declare const components: {
                             filename?: string;
                             id: string;
                             mediaType: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             sourceType: "document";
                             title: string;
                             type: "source";
                           }
                         | {
                             approvalId: string;
-                            providerMetadata?: Record<string, Record<string, any>>;
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerMetadata?: Record<
+                              string,
+                              Record<string, any>
+                            >;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             toolCallId: string;
                             type: "tool-approval-request";
                           }
@@ -3049,27 +4010,42 @@ export declare const components: {
                         isError?: boolean;
                         output?:
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "text";
                               value: string;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "json";
                               value: any;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "error-text";
                               value: string;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               type: "error-json";
                               value: any;
                             }
                           | {
-                              providerOptions?: Record<string, Record<string, any>>;
+                              providerOptions?: Record<
+                                string,
+                                Record<string, any>
+                              >;
                               reason?: string;
                               type: "execution-denied";
                             }
@@ -3077,7 +4053,10 @@ export declare const components: {
                               type: "content";
                               value: Array<
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     text: string;
                                     type: "text";
                                   }
@@ -3090,37 +4069,58 @@ export declare const components: {
                                     data: string;
                                     filename?: string;
                                     mediaType: string;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-data";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-url";
                                     url: string;
                                   }
                                 | {
                                     fileId: string | Record<string, string>;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "file-id";
                                   }
                                 | {
                                     data: string;
                                     mediaType: string;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-data";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-url";
                                     url: string;
                                   }
                                 | {
                                     fileId: string | Record<string, string>;
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "image-file-id";
                                   }
                                 | {
-                                    providerOptions?: Record<string, Record<string, any>>;
+                                    providerOptions?: Record<
+                                      string,
+                                      Record<string, any>
+                                    >;
                                     type: "custom";
                                   }
                               >;
@@ -3179,7 +4179,10 @@ export declare const components: {
                   | string
                   | Array<
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           text: string;
                           type: "text";
@@ -3196,7 +4199,10 @@ export declare const components: {
                           filename?: string;
                           mediaType?: string;
                           mimeType?: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "file";
                         }
@@ -3209,7 +4215,10 @@ export declare const components: {
                   | string
                   | Array<
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           text: string;
                           type: "text";
@@ -3219,12 +4228,18 @@ export declare const components: {
                           filename?: string;
                           mediaType?: string;
                           mimeType?: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "file";
                         }
                       | {
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           signature?: string;
                           text: string;
@@ -3232,7 +4247,10 @@ export declare const components: {
                         }
                       | {
                           data: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           type: "redacted-reasoning";
                         }
@@ -3240,7 +4258,10 @@ export declare const components: {
                           args?: any;
                           input: any;
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           toolName: string;
@@ -3250,7 +4271,10 @@ export declare const components: {
                           args: any;
                           input?: any;
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           toolName: string;
@@ -3265,27 +4289,42 @@ export declare const components: {
                           isError?: boolean;
                           output?:
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "text";
                                 value: string;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "json";
                                 value: any;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "error-text";
                                 value: string;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 type: "error-json";
                                 value: any;
                               }
                             | {
-                                providerOptions?: Record<string, Record<string, any>>;
+                                providerOptions?: Record<
+                                  string,
+                                  Record<string, any>
+                                >;
                                 reason?: string;
                                 type: "execution-denied";
                               }
@@ -3293,7 +4332,10 @@ export declare const components: {
                                 type: "content";
                                 value: Array<
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       text: string;
                                       type: "text";
                                     }
@@ -3306,43 +4348,67 @@ export declare const components: {
                                       data: string;
                                       filename?: string;
                                       mediaType: string;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-data";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-url";
                                       url: string;
                                     }
                                   | {
                                       fileId: string | Record<string, string>;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "file-id";
                                     }
                                   | {
                                       data: string;
                                       mediaType: string;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-data";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-url";
                                       url: string;
                                     }
                                   | {
                                       fileId: string | Record<string, string>;
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "image-file-id";
                                     }
                                   | {
-                                      providerOptions?: Record<string, Record<string, any>>;
+                                      providerOptions?: Record<
+                                        string,
+                                        Record<string, any>
+                                      >;
                                       type: "custom";
                                     }
                                 >;
                               };
                           providerExecuted?: boolean;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           result?: any;
                           toolCallId: string;
@@ -3351,7 +4417,10 @@ export declare const components: {
                         }
                       | {
                           id: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "url";
                           title?: string;
@@ -3362,7 +4431,10 @@ export declare const components: {
                           filename?: string;
                           id: string;
                           mediaType: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           sourceType: "document";
                           title: string;
@@ -3370,7 +4442,10 @@ export declare const components: {
                         }
                       | {
                           approvalId: string;
-                          providerMetadata?: Record<string, Record<string, any>>;
+                          providerMetadata?: Record<
+                            string,
+                            Record<string, any>
+                          >;
                           providerOptions?: Record<string, Record<string, any>>;
                           toolCallId: string;
                           type: "tool-approval-request";
@@ -3390,27 +4465,42 @@ export declare const components: {
                       isError?: boolean;
                       output?:
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "text";
                             value: string;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "json";
                             value: any;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "error-text";
                             value: string;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             type: "error-json";
                             value: any;
                           }
                         | {
-                            providerOptions?: Record<string, Record<string, any>>;
+                            providerOptions?: Record<
+                              string,
+                              Record<string, any>
+                            >;
                             reason?: string;
                             type: "execution-denied";
                           }
@@ -3418,7 +4508,10 @@ export declare const components: {
                             type: "content";
                             value: Array<
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   text: string;
                                   type: "text";
                                 }
@@ -3431,37 +4524,58 @@ export declare const components: {
                                   data: string;
                                   filename?: string;
                                   mediaType: string;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-data";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-url";
                                   url: string;
                                 }
                               | {
                                   fileId: string | Record<string, string>;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "file-id";
                                 }
                               | {
                                   data: string;
                                   mediaType: string;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-data";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-url";
                                   url: string;
                                 }
                               | {
                                   fileId: string | Record<string, string>;
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "image-file-id";
                                 }
                               | {
-                                  providerOptions?: Record<string, Record<string, any>>;
+                                  providerOptions?: Record<
+                                    string,
+                                    Record<string, any>
+                                  >;
                                   type: "custom";
                                 }
                             >;
@@ -3613,7 +4727,12 @@ export declare const components: {
         { cursor?: string; streamId: string },
         null
       >;
-      deleteStreamSync: FunctionReference<"mutation", "internal", { streamId: string }, null>;
+      deleteStreamSync: FunctionReference<
+        "mutation",
+        "internal",
+        { streamId: string },
+        null
+      >;
       finish: FunctionReference<
         "mutation",
         "internal",
@@ -3628,7 +4747,12 @@ export declare const components: {
         },
         null
       >;
-      heartbeat: FunctionReference<"mutation", "internal", { streamId: string }, null>;
+      heartbeat: FunctionReference<
+        "mutation",
+        "internal",
+        { streamId: string },
+        null
+      >;
       list: FunctionReference<
         "query",
         "internal",
@@ -3784,7 +4908,12 @@ export declare const components: {
       >;
     };
     users: {
-      deleteAllForUserId: FunctionReference<"action", "internal", { userId: string }, null>;
+      deleteAllForUserId: FunctionReference<
+        "action",
+        "internal",
+        { userId: string },
+        null
+      >;
       deleteAllForUserIdAsync: FunctionReference<
         "mutation",
         "internal",
@@ -3842,7 +4971,17 @@ export declare const components: {
             limit: number;
             model: string;
             threadId: string;
-            vectorDimension: 128 | 256 | 512 | 768 | 1024 | 1408 | 1536 | 2048 | 3072 | 4096;
+            vectorDimension:
+              | 128
+              | 256
+              | 512
+              | 768
+              | 1024
+              | 1408
+              | 1536
+              | 2048
+              | 3072
+              | 4096;
           },
           { continueCursor: string; isDone: boolean }
         >;
@@ -3850,7 +4989,17 @@ export declare const components: {
           "mutation",
           "internal",
           {
-            vectorDimension: 128 | 256 | 512 | 768 | 1024 | 1408 | 1536 | 2048 | 3072 | 4096;
+            vectorDimension:
+              | 128
+              | 256
+              | 512
+              | 768
+              | 1024
+              | 1408
+              | 1536
+              | 2048
+              | 3072
+              | 4096;
             vectors: Array<{
               messageId?: string;
               model: string;
@@ -3861,7 +5010,16 @@ export declare const components: {
             }>;
           },
           Array<
-            string | string | string | string | string | string | string | string | string | string
+            | string
+            | string
+            | string
+            | string
+            | string
+            | string
+            | string
+            | string
+            | string
+            | string
           >
         >;
         paginate: FunctionReference<
@@ -3872,7 +5030,17 @@ export declare const components: {
             limit: number;
             table?: string;
             targetModel: string;
-            vectorDimension: 128 | 256 | 512 | 768 | 1024 | 1408 | 1536 | 2048 | 3072 | 4096;
+            vectorDimension:
+              | 128
+              | 256
+              | 512
+              | 768
+              | 1024
+              | 1408
+              | 1536
+              | 2048
+              | 3072
+              | 4096;
           },
           {
             continueCursor: string;
@@ -3949,7 +5117,12 @@ export declare const components: {
         },
         { ok: true; retryAfter?: number } | { ok: false; retryAfter: number }
       >;
-      clearAll: FunctionReference<"mutation", "internal", { before?: number }, null>;
+      clearAll: FunctionReference<
+        "mutation",
+        "internal",
+        { before?: number },
+        null
+      >;
       getServerTime: FunctionReference<"mutation", "internal", {}, number>;
       getValue: FunctionReference<
         "query",

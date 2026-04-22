@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAction, useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useAnalytics } from "@/lib/analytics";
@@ -22,10 +22,16 @@ const PHASE_LABELS = {
 export default function ConnectTonalPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { track } = useAnalytics();
   const connectTonal = useAction(api.tonal.connectPublic.connectTonal);
   const me = useQuery(api.users.getMe);
   const isReconnecting = me?.hasTonalProfile && me?.tonalTokenExpired;
+
+  // Multi-client: if a profileId is in the URL, we're connecting a specific client profile
+  const profileIdParam = searchParams.get("profileId") as
+    | import("../../../convex/_generated/dataModel").Id<"userProfiles">
+    | null;
 
   const [tonalEmail, setTonalEmail] = useState("");
   const [tonalPassword, setTonalPassword] = useState("");
@@ -50,11 +56,16 @@ export default function ConnectTonalPage() {
 
     try {
       const phaseTimer = setTimeout(() => setPhase("syncing"), 1500);
-      await connectTonal({ tonalEmail, tonalPassword });
+      await connectTonal({
+        tonalEmail,
+        tonalPassword,
+        ...(profileIdParam ? { profileId: profileIdParam } : {}),
+      });
       clearTimeout(phaseTimer);
       track("tonal_connected");
       setPhase("done");
-      const destination = isReconnecting ? "/dashboard" : "/onboarding";
+      // If connecting a client profile, go to coach dashboard; otherwise normal flow
+      const destination = profileIdParam ? "/coach" : isReconnecting ? "/dashboard" : "/onboarding";
       setTimeout(() => router.replace(destination), 600);
     } catch {
       track("tonal_connection_failed", {

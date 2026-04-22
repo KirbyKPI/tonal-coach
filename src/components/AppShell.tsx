@@ -15,12 +15,14 @@ import {
   Sun,
   TrendingUp,
   User,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatusBanner } from "@/components/StatusBanner";
 import { SyncStatusBanner } from "@/components/SyncStatusBanner";
 import { OpenSourceBanner } from "@/components/OpenSourceBanner";
 import { CheckInBell } from "@/components/CheckInBell";
+import { ClientSwitcher } from "@/components/ClientSwitcher";
 import { Button } from "@/components/ui/button";
 import { ReconnectModal } from "@/components/ReconnectModal";
 import { useTheme } from "@/components/ThemeProvider";
@@ -35,6 +37,7 @@ const navLinks: Array<{
   { href: "/schedule", label: "Schedule", icon: CalendarDays },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/progress", label: "Progress", icon: TrendingUp },
+  { href: "/coach", label: "KPI Coach", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -108,6 +111,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="text-base font-bold tracking-tight text-foreground drop-shadow-[0_0_12px_var(--primary)]">
               tonal.coach
             </span>
+          </div>
+
+          <div className="px-3 pb-3">
+            <ClientSwitcher />
           </div>
 
           <nav className="flex flex-col gap-1.5 px-3">
