@@ -25,12 +25,21 @@ export const connectTonal = action({
   },
 });
 
-/** Create a coach-only account that skips the Tonal connection entirely. */
+const COACH_EMAIL = "kirby@kpifit.com";
+
+/** Create a coach-only account that skips the Tonal connection entirely.
+ *  Restricted to the hardcoded coach email. */
 export const skipTonalAsCoach = action({
   args: {},
   handler: async (ctx): Promise<{ success: boolean }> => {
     const userId = await ctx.runQuery(internal.lib.auth.resolveEffectiveUserId, {});
     if (!userId) throw new Error("Not authenticated");
+
+    // Only the designated coach email can skip Tonal
+    const user = await ctx.runQuery(internal.users.getUserById, { userId });
+    if (!user?.email || user.email.toLowerCase() !== COACH_EMAIL) {
+      throw new Error("Coach access is restricted.");
+    }
 
     await ctx.runMutation(internal.userProfiles.createCoachStub, { userId });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAction } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Check, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ const PHASE_LABELS: Record<Exclude<ConnectionPhase, "idle">, string> = {
 export function ConnectStep({ onComplete }: { readonly onComplete: () => void }) {
   const connectTonal = useAction(api.tonal.connectPublic.connectTonal);
   const skipAsCoach = useAction(api.tonal.connectPublic.skipTonalAsCoach);
+  const me = useQuery(api.users.getMe);
+  const isCoachEmail = me?.email?.toLowerCase() === "kirby@kpifit.com";
   const [tonalEmail, setTonalEmail] = useState("");
   const [tonalPassword, setTonalPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -119,25 +121,29 @@ export function ConnectStep({ onComplete }: { readonly onComplete: () => void })
               Your password is used only to obtain a token. We never store it.
             </p>
 
-            <div className="relative my-2">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">or</span>
-              </div>
-            </div>
+            {isCoachEmail && (
+              <>
+                <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">or</span>
+                  </div>
+                </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              size="lg"
-              onClick={handleCoachSkip}
-            >
-              <ShieldCheck className="size-4" />
-              I&apos;m a coach &mdash; skip Tonal connection
-            </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  size="lg"
+                  onClick={handleCoachSkip}
+                >
+                  <ShieldCheck className="size-4" />
+                  I&apos;m a coach &mdash; skip Tonal connection
+                </Button>
+              </>
+            )}
           </form>
         )}
       </CardContent>

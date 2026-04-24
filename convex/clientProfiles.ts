@@ -97,7 +97,7 @@ export const addClientProfile = mutation({
       tonalToken: "",
       clientLabel: args.clientLabel,
       tonalEmail: args.tonalEmail,
-      isCoachAccount: true,
+      isCoachAccount: false,
       lastActiveAt: Date.now(),
     });
 

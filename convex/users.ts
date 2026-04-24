@@ -1,5 +1,25 @@
-import { query } from "./_generated/server";
+import { v } from "convex/values";
+import { internalQuery, query } from "./_generated/server";
 import { getEffectiveUserId } from "./lib/auth";
+
+/** Look up a user by ID (server-only). */
+export const getUserById = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    return ctx.db.get(userId);
+  },
+});
+
+/** Find the coach user by hardcoded email (server-only). */
+export const getCoachUser = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", "kirby@kpifit.com"))
+      .first();
+  },
+});
 
 export const getMe = query({
   args: {},

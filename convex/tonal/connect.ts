@@ -83,7 +83,85 @@ export const connectTonal = internalAction({
       userId,
     });
 
+    // 10. Auto-add as client in the coach's dashboard (if not the coach themselves)
+    if (!profileId) {
+      // Only auto-add for direct signups, not coach-added stubs
+      await ctx.runMutation(internal.tonal.connect.mirrorProfileToCoach, {
+        sourceUserId: userId,
+        tonalUserId,
+        tonalEmail,
+        tonalToken: encryptedToken,
+        tonalRefreshToken: encryptedRefresh,
+        tonalTokenExpiresAt: expiresAt,
+        profileData: toUserProfileData(profile),
+      });
+    }
+
     return { success: true, tonalUserId };
+  },
+});
+
+/** Mirror a new user's Tonal profile into the coach's account so they auto-appear
+ *  in the coach dashboard. Skips if the user IS the coach or if a profile with the
+ *  same tonalUserId already exists under the coach. */
+export const mirrorProfileToCoach = internalMutation({
+  args: {
+    sourceUserId: v.id("users"),
+    tonalUserId: v.string(),
+    tonalEmail: v.string(),
+    tonalToken: v.string(),
+    tonalRefreshToken: v.optional(v.string()),
+    tonalTokenExpiresAt: v.optional(v.number()),
+    profileData: v.optional(
+      v.object({
+        firstName: v.string(),
+        lastName: v.string(),
+        heightInches: v.number(),
+        weightPounds: v.number(),
+        gender: v.string(),
+        level: v.string(),
+        workoutsPerWeek: v.number(),
+        workoutDurationMin: v.number(),
+        workoutDurationMax: v.number(),
+        dateOfBirth: v.optional(v.string()),
+        username: v.optional(v.string()),
+        tonalCreatedAt: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, { sourceUserId, tonalUserId, ...fields }) => {
+    // Find the coach user
+    const coach = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", "kirby@kpifit.com"))
+      .first();
+    if (!coach) return; // No coach account yet — skip silently
+
+    // Don't mirror the coach to themselves
+    if (sourceUserId === coach._id) return;
+
+    // Check if a profile with this tonalUserId already exists under the coach
+    const existing = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_userId", (q) => q.eq("userId", coach._id))
+      .collect();
+    if (existing.some((p) => p.tonalUserId === tonalUserId)) return;
+
+    // Create the mirrored profile under the coach's userId
+    const clientName = fields.profileData
+      ? `${fields.profileData.firstName} ${fields.profileData.lastName}`
+      : fields.tonalEmail;
+
+    const now = Date.now();
+    await ctx.db.insert("userProfiles", {
+      userId: coach._id,
+      tonalUserId,
+      ...fields,
+      clientLabel: clientName,
+      isCoachAccount: false,
+      lastActiveAt: now,
+      tonalConnectedAt: now,
+    });
   },
 });
 
