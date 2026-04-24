@@ -31,6 +31,32 @@ export const debugProfileOwnership = internalMutation({
   },
 });
 
+/** List all users and count their data rows across key tables. */
+export const debugAllUsers = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    const results = [];
+    for (const u of users) {
+      const workouts = await ctx.db
+        .query("completedWorkouts")
+        .withIndex("by_userId", (q) => q.eq("userId", u._id))
+        .collect();
+      const strength = await ctx.db
+        .query("strengthScoreSnapshots")
+        .withIndex("by_userId", (q) => q.eq("userId", u._id))
+        .collect();
+      results.push({
+        userId: u._id,
+        email: u.email ?? "no-email",
+        workouts: workouts.length,
+        strengthSnapshots: strength.length,
+      });
+    }
+    return results;
+  },
+});
+
 /** Clean up duplicate Kirby profiles + orphaned profiles under deleted users.
  *  Keeps: 1 best Kirby profile (most data), Adam, Eunice, Coach Account.
  *  Deletes: all other Kirby duplicates + all profiles under deleted users. */
@@ -124,6 +150,131 @@ export const cleanupDuplicates = internalMutation({
         eunice ? `Eunice (${eunice._id})` : null,
       ].filter(Boolean),
     };
+  },
+});
+
+/** Migrate ALL user data from one userId to another. */
+export const migrateAllUserData = internalMutation({
+  args: { fromUserId: v.id("users"), toUserId: v.id("users") },
+  handler: async (ctx, { fromUserId, toUserId }) => {
+    const counts: Record<string, number> = {};
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async function migrate(tableName: string, rows: Array<{ _id: any }>) {
+      for (const row of rows) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await ctx.db.patch(row._id, { userId: toUserId } as any);
+      }
+      counts[tableName] = rows.length;
+    }
+
+    await migrate(
+      "completedWorkouts",
+      await ctx.db
+        .query("completedWorkouts")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "exercisePerformance",
+      await ctx.db
+        .query("exercisePerformance")
+        .withIndex("by_userId_date", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "strengthScoreSnapshots",
+      await ctx.db
+        .query("strengthScoreSnapshots")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "currentStrengthScores",
+      await ctx.db
+        .query("currentStrengthScores")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "muscleReadiness",
+      await ctx.db
+        .query("muscleReadiness")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "workoutPlans",
+      await ctx.db
+        .query("workoutPlans")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "weekPlans",
+      await ctx.db
+        .query("weekPlans")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "workoutFeedback",
+      await ctx.db
+        .query("workoutFeedback")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "trainingBlocks",
+      await ctx.db
+        .query("trainingBlocks")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "goals",
+      await ctx.db
+        .query("goals")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "injuries",
+      await ctx.db
+        .query("injuries")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "checkIns",
+      await ctx.db
+        .query("checkIns")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "externalActivities",
+      await ctx.db
+        .query("externalActivities")
+        .withIndex("by_userId_beginTime", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "aiUsage",
+      await ctx.db
+        .query("aiUsage")
+        .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+    await migrate(
+      "tonalCache",
+      await ctx.db
+        .query("tonalCache")
+        .withIndex("by_userId_dataType", (q) => q.eq("userId", fromUserId))
+        .collect(),
+    );
+
+    return { fromUserId, toUserId, counts };
   },
 });
 

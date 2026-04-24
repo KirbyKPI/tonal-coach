@@ -2,19 +2,33 @@
 
 import Link from "next/link";
 import type { MuscleReadiness } from "../../../convex/tonal/types";
-import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function readinessColor(value: number): string {
-  if (value <= 30)
-    return "bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/15 hover:shadow-[0_0_12px_oklch(0.65_0.23_15/0.15)]";
-  if (value <= 60)
-    return "bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/15 hover:shadow-[0_0_12px_oklch(0.8_0.16_85/0.15)]";
-  return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/15 hover:shadow-[0_0_12px_oklch(0.7_0.17_155/0.15)]";
+/** Returns a continuous hue (0-145) mapped from readiness 0-100.
+ *  0 → red (25°), 50 → amber (80°), 100 → lime green (145°). */
+function readinessHue(value: number): number {
+  const clamped = Math.max(0, Math.min(100, value));
+  // Piecewise: 0-50 maps 25→80, 50-100 maps 80→145
+  if (clamped <= 50) return 25 + (clamped / 50) * 55;
+  return 80 + ((clamped - 50) / 50) * 65;
+}
+
+/** Inline styles for the continuous gradient background. */
+function readinessStyle(value: number): React.CSSProperties {
+  const hue = readinessHue(value);
+  const lightness = value <= 30 ? 0.65 : value <= 60 ? 0.75 : 0.8;
+  const chroma = value <= 30 ? 0.22 : value <= 60 ? 0.18 : 0.2;
+  // Intensity scales with how far from 50 the value is (extremes are more vivid)
+  const intensity = value >= 80 ? 0.15 : value <= 20 ? 0.18 : 0.1;
+  return {
+    backgroundColor: `oklch(${lightness} ${chroma} ${hue} / ${intensity})`,
+    borderColor: `oklch(${lightness} ${chroma} ${hue} / 0.25)`,
+    color: `oklch(${lightness} ${chroma} ${hue})`,
+  };
 }
 
 function readinessLabel(value: number): string {
@@ -44,10 +58,8 @@ export function MuscleReadinessMap({ readiness }: MuscleReadinessMapProps) {
           <Link
             key={muscle}
             href={`/exercises?muscleGroup=${encodeURIComponent(muscle)}`}
-            className={cn(
-              "group flex items-center justify-between rounded-lg border px-3 py-3 transition-all duration-200",
-              readinessColor(value),
-            )}
+            className="group flex items-center justify-between rounded-lg border px-3 py-3 transition-all duration-200"
+            style={readinessStyle(value)}
           >
             <div className="flex flex-col gap-0.5">
               <span className="text-xs font-semibold">{muscle}</span>
