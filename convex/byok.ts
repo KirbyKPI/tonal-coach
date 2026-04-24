@@ -137,7 +137,7 @@ async function saveProviderKeyCore(
   const profile = await ctx.db
     .query("userProfiles")
     .withIndex("by_userId", (q) => q.eq("userId", userId))
-    .unique();
+    .first();
 
   if (!profile) throw new Error("User profile not found");
 
@@ -169,7 +169,7 @@ async function removeProviderKeyCore(
   const profile = await ctx.db
     .query("userProfiles")
     .withIndex("by_userId", (q) => q.eq("userId", userId))
-    .unique();
+    .first();
 
   if (!profile) throw new Error("User profile not found");
 
@@ -319,7 +319,7 @@ export const _getKeyResolutionContext = internalQuery({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .unique();
+      .first();
     return {
       userCreationTime: user._creationTime,
       profile,
