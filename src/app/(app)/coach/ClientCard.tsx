@@ -227,11 +227,11 @@ export function ClientCard({
       </div>
 
       {/* Action buttons */}
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 space-y-2">
         {!client.hasConnectedTonal ? (
           <Link
             href={`/connect-tonal?profileId=${client.profileId}`}
-            className="flex-1 rounded-lg bg-primary py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors duration-150"
+            className="block rounded-lg bg-primary py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors duration-150"
           >
             Connect Tonal
           </Link>
@@ -240,7 +240,7 @@ export function ClientCard({
             <button
               onClick={() => onSwitch(client.profileId)}
               className={cn(
-                "flex-1 rounded-lg py-2 text-sm font-medium transition-colors duration-150",
+                "w-full rounded-lg py-2 text-sm font-medium transition-colors duration-150",
                 client.isActive
                   ? "bg-primary/10 text-primary cursor-default"
                   : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
@@ -250,33 +250,32 @@ export function ClientCard({
               {client.isActive ? "Active" : "Switch to"}
             </button>
 
-            <Link
-              href="/dashboard"
-              onClick={() => !client.isActive && onSwitch(client.profileId)}
-              className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors duration-150"
-            >
-              <LayoutDashboard className="size-3.5" />
-              Dashboard
-              <ChevronRight className="size-3.5" />
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                href="/dashboard"
+                onClick={() => !client.isActive && onSwitch(client.profileId)}
+                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-muted px-2 py-2 text-sm text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors duration-150"
+              >
+                <LayoutDashboard className="size-3.5 shrink-0" />
+                Dashboard
+              </Link>
 
-            <Link
-              href="/chat"
-              onClick={() => !client.isActive && onSwitch(client.profileId)}
-              className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors duration-150"
-            >
-              Chat
-              <ChevronRight className="size-3.5" />
-            </Link>
+              <Link
+                href="/chat"
+                onClick={() => !client.isActive && onSwitch(client.profileId)}
+                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-muted px-2 py-2 text-sm text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors duration-150"
+              >
+                Chat
+              </Link>
 
-            <Link
-              href="/schedule"
-              onClick={() => !client.isActive && onSwitch(client.profileId)}
-              className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors duration-150"
-            >
-              Schedule
-              <ChevronRight className="size-3.5" />
-            </Link>
+              <Link
+                href="/schedule"
+                onClick={() => !client.isActive && onSwitch(client.profileId)}
+                className="flex flex-1 items-center justify-center gap-1 rounded-lg bg-muted px-2 py-2 text-sm text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors duration-150"
+              >
+                Schedule
+              </Link>
+            </div>
           </>
         )}
       </div>
