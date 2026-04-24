@@ -399,6 +399,7 @@ export const createCoachStub = internalMutation({
       tonalUserId: `coach-${userId}`,
       tonalToken: "coach-no-token",
       isCoachAccount: true,
+      clientLabel: "Coach Account",
       lastActiveAt: now,
       tonalConnectedAt: now,
       // Mark onboarding as complete so the coach lands in the app

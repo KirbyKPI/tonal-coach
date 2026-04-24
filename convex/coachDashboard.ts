@@ -11,10 +11,15 @@ export const getClientOverviews = query({
     const userId = await getEffectiveUserId(ctx);
     if (!userId) return [];
 
-    const profiles = await ctx.db
+    const allProfiles = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
+
+    // Hide the coach's own stub profile — it's not a real client
+    const profiles = allProfiles.filter(
+      (p) => !(p.isCoachAccount && p.tonalUserId.startsWith("coach-")),
+    );
 
     const user = await ctx.db.get(userId);
     const activeProfileId = user?.activeClientProfileId;
