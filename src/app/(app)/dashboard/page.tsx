@@ -17,6 +17,8 @@ import { TrainingFrequencyChart } from "@/features/dashboard/TrainingFrequencyCh
 import { RecentWorkoutsList } from "@/features/dashboard/RecentWorkoutsList";
 import { ExternalActivitiesList } from "@/features/dashboard/ExternalActivitiesList";
 import { AsyncCard } from "@/components/AsyncCard";
+import { CoachOverview } from "@/features/dashboard/CoachOverview";
+import { useActiveClient } from "@/hooks/useActiveClient";
 import { useActionData } from "@/hooks/useActionData";
 import { ArrowRight } from "lucide-react";
 
@@ -54,6 +56,19 @@ const NAV_PILLS = [
 export default function DashboardPage() {
   usePageView("dashboard_viewed");
 
+  // If the coach stub profile is active, show the coach aggregate dashboard
+  const { activeProfile } = useActiveClient();
+  const isCoachStub =
+    activeProfile?.isCoachAccount === true && activeProfile?.tonalUserId?.startsWith("coach-");
+
+  if (isCoachStub) {
+    return <CoachOverview />;
+  }
+
+  return <ClientDashboard />;
+}
+
+function ClientDashboard() {
   const strength = useActionData<{
     scores: StrengthScore[];
     distribution: StrengthDistribution;
