@@ -264,7 +264,7 @@ export const setSelectedProvider = mutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
 
     if (!profile) throw new Error("User profile not found");
 
@@ -288,7 +288,7 @@ export const setModelOverride = mutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
 
     if (!profile) throw new Error("User profile not found");
 
@@ -342,7 +342,7 @@ export const _getGeminiKeyRaw = internalQuery({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (!profile) return null;
     return {
       encrypted: profile.geminiApiKeyEncrypted,
@@ -380,7 +380,7 @@ export const getBYOKStatus = query({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     const hasAnyKey = (["gemini", "claude", "openai", "openrouter"] as const).some(
       (p) => !!profile?.[KEY_FIELD_MAP[p]],
     );

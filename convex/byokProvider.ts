@@ -16,7 +16,7 @@ export const _getAllProviderKeysRaw = internalQuery({
     const p = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (!p) return null;
 
     const sp: ProviderId =

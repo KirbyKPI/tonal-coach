@@ -24,7 +24,7 @@ export const getByUserId = internalQuery({
     return await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
   },
 });
 
@@ -50,7 +50,7 @@ export const create = internalMutation({
     const existing = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .unique();
+      .first();
 
     if (existing) {
       await ctx.db.patch(existing._id, {
@@ -83,7 +83,7 @@ export const setFirstAiWorkoutCompletedAt = internalMutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (!profile || profile.firstAiWorkoutCompletedAt !== undefined) return;
     await ctx.db.patch(profile._id, { firstAiWorkoutCompletedAt: completedAt });
   },
@@ -100,7 +100,7 @@ export const updateTonalToken = internalMutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
 
     if (!profile) throw new Error("User profile not found");
 
@@ -131,7 +131,7 @@ export const markTokenExpired = internalMutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (profile) await ctx.db.patch(profile._id, { tonalTokenExpiresAt: 0 });
   },
 });
@@ -184,7 +184,7 @@ export const getTrainingPreferences = query({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     return profile?.trainingPreferences ?? null;
   },
 });
@@ -198,7 +198,7 @@ export const saveTrainingPreferences = mutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (!profile) throw new Error("User profile not found");
     await ctx.db.patch(profile._id, {
       trainingPreferences: {
@@ -257,7 +257,7 @@ export const getTrainingPreferencesInternal = internalQuery({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     return profile?.trainingPreferences ?? null;
   },
 });
@@ -269,7 +269,7 @@ export const saveTrainingPreferencesInternal = internalMutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (!profile) throw new Error("User profile not found");
     await ctx.db.patch(profile._id, {
       trainingPreferences: {
@@ -288,7 +288,7 @@ export const getLastSyncedActivityDate = internalQuery({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     return profile?.lastSyncedActivityDate ?? null;
   },
 });
@@ -300,7 +300,7 @@ export const updateLastSyncedActivityDate = internalMutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (!profile) throw new Error("User profile not found");
     await ctx.db.patch(profile._id, { lastSyncedActivityDate: date });
   },
@@ -316,7 +316,7 @@ export const updateProfileData = internalMutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (!profile) throw new Error("User profile not found");
     await ctx.db.patch(profile._id, { profileData, profileDataRefreshedAt: Date.now() });
 
@@ -337,7 +337,7 @@ export const acquireTokenRefreshLock = internalMutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (!profile) return false;
 
     const now = Date.now();
@@ -361,7 +361,7 @@ export const releaseTokenRefreshLock = internalMutation({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (profile) await ctx.db.patch(profile._id, { tokenRefreshInProgress: undefined });
   },
 });
@@ -390,7 +390,7 @@ export const createCoachStub = internalMutation({
     const existing = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     if (existing) return existing._id;
 
     const now = Date.now();
@@ -417,7 +417,7 @@ export const getThreadStaleHours = internalQuery({
     const profile = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .unique();
+      .first();
     return profile?.threadStaleHours ?? 24;
   },
 });
