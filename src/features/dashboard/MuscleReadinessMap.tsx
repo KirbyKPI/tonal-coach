@@ -64,17 +64,29 @@ export function MuscleReadinessMap({ readiness }: MuscleReadinessMapProps) {
       {/* Links section */}
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1">
         {(() => {
-          const fresh = entries.find((e) => e.value > 80);
-          if (!fresh) return null;
+          const readyCount = entries.filter((e) => e.value > 80).length;
+          if (readyCount === 0) return null;
+          const upper = ["Chest", "Back", "Shoulders", "Biceps", "Triceps"];
+          const lower = ["Quads", "Hamstrings", "Glutes", "Calves"];
+          const upperReady = entries.filter((e) => upper.includes(e.muscle) && e.value > 80).length;
+          const lowerReady = entries.filter((e) => lower.includes(e.muscle) && e.value > 80).length;
+          const label =
+            readyCount >= 10
+              ? "Full body"
+              : upperReady >= 4 && lowerReady < 3
+                ? "Upper body"
+                : lowerReady >= 3 && upperReady < 3
+                  ? "Lower body"
+                  : "Full body";
           const prompt = encodeURIComponent(
-            `My ${fresh.muscle.toLowerCase()} is at ${fresh.value}% readiness. Can you program a ${fresh.muscle.toLowerCase()} workout?`,
+            `Muscle readiness is high across ${label.toLowerCase()} groups. Program me a ${label.toLowerCase()} workout.`,
           );
           return (
             <Link
               href={`/chat?prompt=${prompt}`}
               className="text-xs text-primary/80 transition-colors duration-200 hover:text-primary"
             >
-              {fresh.muscle} is fresh — ask coach for a workout &rarr;
+              {label} recovered — program a workout &rarr;
             </Link>
           );
         })()}

@@ -53,11 +53,14 @@ export const getMe = query({
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
 
+    // Check if ANY profile is a coach account (not just the active one)
+    const isCoach = allProfiles.some((p) => p.isCoachAccount === true);
+
     return {
       userId,
       email: user?.email as string | undefined,
       hasTonalProfile: !!profile,
-      onboardingCompleted: !!profile?.onboardingData?.completedAt,
+      onboardingCompleted: !!profile?.onboardingData?.completedAt || isCoach,
       tonalName: profile?.profileData
         ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
         : (profile?.clientLabel ?? undefined),
@@ -66,7 +69,7 @@ export const getMe = query({
       syncStatus: profile?.syncStatus,
       isMultiClient: allProfiles.length > 1,
       activeProfileId: profile?._id,
-      isCoachAccount: profile?.isCoachAccount ?? false,
+      isCoachAccount: isCoach,
     };
   },
 });

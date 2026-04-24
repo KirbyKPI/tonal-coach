@@ -1,5 +1,149 @@
-import { query } from "./_generated/server";
+import { v } from "convex/values";
+import { internalMutation, query } from "./_generated/server";
 import { getEffectiveUserId } from "./lib/auth";
+
+/** Debug: list all userIds that have profiles, and which users they map to. */
+export const debugProfileOwnership = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const profiles = await ctx.db.query("userProfiles").collect();
+    const userIds = [...new Set(profiles.map((p) => p.userId))];
+    const results = [];
+    for (const uid of userIds) {
+      const user = await ctx.db.get(uid);
+      const profileCount = profiles.filter((p) => p.userId === uid).length;
+      const names = profiles
+        .filter((p) => p.userId === uid)
+        .map((p) =>
+          p.profileData
+            ? `${p.profileData.firstName} ${p.profileData.lastName}`
+            : (p.clientLabel ?? "no-name"),
+        )
+        .join(", ");
+      results.push({
+        userId: uid,
+        email: user?.email ?? "DELETED USER",
+        profileCount,
+        names,
+      });
+    }
+    return results;
+  },
+});
+
+/** Clean up duplicate Kirby profiles + orphaned profiles under deleted users.
+ *  Keeps: 1 best Kirby profile (most data), Adam, Eunice, Coach Account.
+ *  Deletes: all other Kirby duplicates + all profiles under deleted users. */
+export const cleanupDuplicates = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const allProfiles = await ctx.db.query("userProfiles").collect();
+    const deleted: string[] = [];
+
+    // 1. Delete all profiles under deleted users
+    for (const p of allProfiles) {
+      const user = await ctx.db.get(p.userId);
+      if (!user) {
+        await ctx.db.delete(p._id);
+        deleted.push(`${p._id} (orphan under deleted user ${p.userId})`);
+      }
+    }
+
+    // 2. Find duplicate Kirby profiles under the coach and keep the best one
+    // Find the coach — get the LAST one (newest) since there may be duplicates
+    const coaches = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", "kirby@kpifit.com"))
+      .collect();
+    // Pick the one that actually has profiles
+    let coach = null;
+    for (const c of coaches) {
+      const profiles = await ctx.db
+        .query("userProfiles")
+        .withIndex("by_userId", (q) => q.eq("userId", c._id))
+        .first();
+      if (profiles) {
+        coach = c;
+        break;
+      }
+    }
+    if (!coach) return { deleted, kept: [] };
+
+    const coachProfiles = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_userId", (q) => q.eq("userId", coach._id))
+      .collect();
+
+    // Separate by type
+    const coachStub = coachProfiles.find(
+      (p) => p.isCoachAccount && p.tonalUserId.startsWith("coach-"),
+    );
+    const adam = coachProfiles.find((p) => p.profileData?.firstName === "Adam");
+    const eunice = coachProfiles.find((p) => p.profileData?.firstName === "Eunice");
+    const kirbyProfiles = coachProfiles.filter(
+      (p) => p.profileData?.firstName === "Kirby" && !p.isCoachAccount,
+    );
+
+    // Keep the Kirby profile with the most data (has gemini key, sync complete, etc)
+    const bestKirby = kirbyProfiles.sort((a, b) => {
+      const score = (p: typeof a) => {
+        let s = 0;
+        if (p.geminiApiKeyEncrypted) s += 10;
+        if (p.claudeApiKeyEncrypted) s += 10;
+        if (p.syncStatus === "complete") s += 5;
+        if (p.onboardingData?.completedAt) s += 3;
+        if (p.trainingPreferences) s += 2;
+        if (p.tonalTokenExpiresAt && p.tonalTokenExpiresAt > Date.now()) s += 5;
+        return s;
+      };
+      return score(b) - score(a);
+    })[0];
+
+    // Delete extra Kirby profiles
+    for (const k of kirbyProfiles) {
+      if (bestKirby && k._id === bestKirby._id) continue;
+      await ctx.db.delete(k._id);
+      deleted.push(`${k._id} (duplicate Kirby)`);
+    }
+
+    // Also delete any profiles with no name, no profileData, not coach stub
+    const unnamed = coachProfiles.filter(
+      (p) => !p.profileData && !p.isCoachAccount && !p.clientLabel,
+    );
+    for (const u of unnamed) {
+      await ctx.db.delete(u._id);
+      deleted.push(`${u._id} (unnamed/empty)`);
+    }
+
+    return {
+      deleted,
+      kept: [
+        coachStub ? `Coach Account (${coachStub._id})` : null,
+        bestKirby ? `Kirby Coggins (${bestKirby._id})` : null,
+        adam ? `Adam (${adam._id})` : null,
+        eunice ? `Eunice (${eunice._id})` : null,
+      ].filter(Boolean),
+    };
+  },
+});
+
+/** Reassign ALL profiles from one userId to another.
+ *  npx convex run coachDashboard:migrateProfiles '{"fromUserId":"old","toUserId":"new"}' --prod */
+export const migrateProfiles = internalMutation({
+  args: { fromUserId: v.id("users"), toUserId: v.id("users") },
+  handler: async (ctx, { fromUserId, toUserId }) => {
+    const profiles = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_userId", (q) => q.eq("userId", fromUserId))
+      .collect();
+
+    for (const p of profiles) {
+      await ctx.db.patch(p._id, { userId: toUserId });
+    }
+
+    return { migrated: profiles.length, fromUserId, toUserId };
+  },
+});
 
 /**
  * Returns a summary card for every client profile owned by the current user.

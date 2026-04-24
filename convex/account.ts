@@ -102,6 +102,19 @@ export const changePassword = action({
   },
 });
 
+/** One-off admin password reset. Run via CLI:
+ *  npx convex run account:adminResetPassword '{"email":"kirby@kpifit.com","newPassword":"yourpass"}' --prod */
+export const adminResetPassword = action({
+  args: { email: v.string(), newPassword: v.string() },
+  handler: async (ctx, { email, newPassword }) => {
+    await modifyAccountCredentials(ctx, {
+      provider: "password",
+      account: { id: email, secret: newPassword },
+    });
+    return { success: true, email };
+  },
+});
+
 export const getUserEmail = internalQuery({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
