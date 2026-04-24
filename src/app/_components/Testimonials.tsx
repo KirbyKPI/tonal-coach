@@ -57,7 +57,7 @@ export function Testimonials() {
             >
               <span
                 className="block text-3xl font-bold leading-none"
-                style={{ color: "oklch(0.80 0.20 142 / 25%)" }}
+                style={{ color: "oklch(0.82 0.24 145 / 25%)" }}
                 aria-hidden="true"
               >
                 &ldquo;

@@ -122,9 +122,9 @@ export function HowItWorksSection() {
               <span
                 className="mb-4 flex size-10 items-center justify-center rounded-full text-sm font-bold"
                 style={{
-                  background: "oklch(0.80 0.20 142 / 15%)",
-                  color: "oklch(0.80 0.20 142)",
-                  boxShadow: "0 0 0 1px oklch(0.80 0.20 142 / 40%)",
+                  background: "oklch(0.82 0.24 145 / 15%)",
+                  color: "oklch(0.82 0.24 145)",
+                  boxShadow: "0 0 0 1px oklch(0.82 0.24 145 / 40%)",
                 }}
               >
                 {number}
@@ -185,9 +185,9 @@ function FeatureMiniMockup({ index }: { index: number }) {
       <div className="rounded-lg bg-muted px-3 py-2 text-foreground">Give me a pull day</div>
       <div
         className="mt-2 rounded-lg px-3 py-2"
-        style={{ background: "oklch(0.80 0.20 142 / 10%)" }}
+        style={{ background: "oklch(0.82 0.24 145 / 10%)" }}
       >
-        <span className="text-xs font-medium" style={{ color: "oklch(0.80 0.20 142)" }}>
+        <span className="text-xs font-medium" style={{ color: "oklch(0.82 0.24 145)" }}>
           Coach
         </span>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -213,7 +213,7 @@ function FeatureMiniMockup({ index }: { index: number }) {
             className="flex-1 rounded-sm"
             style={{
               height: h,
-              background: i === 5 ? "oklch(0.80 0.20 142)" : "oklch(0.80 0.20 142 / 30%)",
+              background: i === 5 ? "oklch(0.82 0.24 145)" : "oklch(0.82 0.24 145 / 30%)",
             }}
           />
         ))}
@@ -223,7 +223,7 @@ function FeatureMiniMockup({ index }: { index: number }) {
     // Proactive check-ins
     <div key="checkins" className="rounded-xl bg-card p-4 ring-1 ring-border text-sm">
       <div className="rounded-lg bg-muted px-3 py-2">
-        <p className="text-[10px] font-medium" style={{ color: "oklch(0.80 0.20 142)" }}>
+        <p className="text-[10px] font-medium" style={{ color: "oklch(0.82 0.24 145)" }}>
           Mon 9am
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -233,7 +233,7 @@ function FeatureMiniMockup({ index }: { index: number }) {
     </div>,
     // Progress tracking
     <div key="progress" className="rounded-xl bg-card p-4 ring-1 ring-border">
-      <span className="text-3xl font-bold" style={{ color: "oklch(0.80 0.20 142)" }}>
+      <span className="text-3xl font-bold" style={{ color: "oklch(0.82 0.24 145)" }}>
         847
       </span>
       <span className="ml-2 text-sm text-emerald-400">+12</span>
@@ -284,19 +284,19 @@ export function PricingTeaser() {
         <div
           className="scroll-scale-in rounded-2xl p-[1px]"
           style={{
-            background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
+            background: "linear-gradient(135deg, oklch(0.82 0.24 145), oklch(0.92 0.05 150))",
           }}
         >
           <div className="rounded-[15px] bg-card px-8 py-10 text-center">
             <p
               className="mb-2 text-xs font-medium uppercase tracking-widest"
-              style={{ color: "oklch(0.80 0.20 142)" }}
+              style={{ color: "oklch(0.82 0.24 145)" }}
             >
               Open Source
             </p>
             <span
               className="text-6xl font-bold tracking-tight"
-              style={{ color: "oklch(0.80 0.20 142)" }}
+              style={{ color: "oklch(0.82 0.24 145)" }}
             >
               $0
             </span>

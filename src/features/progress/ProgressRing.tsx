@@ -75,7 +75,7 @@ export function ProgressRing({
             className="pointer-events-none absolute inset-0 rounded-full"
             style={{
               boxShadow:
-                "0 0 20px oklch(0.80 0.20 142 / 0.15), 0 0 40px oklch(0.80 0.20 142 / 0.05)",
+                "0 0 20px oklch(0.82 0.24 145 / 0.15), 0 0 40px oklch(0.82 0.24 145 / 0.05)",
             }}
           />
         )}

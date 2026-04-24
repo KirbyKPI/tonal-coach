@@ -77,7 +77,7 @@ export function ReconnectModal({ tonalEmail, open, onDismiss }: ReconnectModalPr
           <div
             className="mb-1 flex size-12 items-center justify-center rounded-2xl shadow-lg shadow-primary/10"
             style={{
-              background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
+              background: "linear-gradient(135deg, oklch(0.82 0.24 145), oklch(0.92 0.05 150))",
             }}
           >
             {phase === "success" ? (

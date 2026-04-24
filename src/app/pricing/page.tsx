@@ -69,7 +69,7 @@ export default function PricingPage() {
               <div
                 className="rounded-2xl p-[1px]"
                 style={{
-                  background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
+                  background: "linear-gradient(135deg, oklch(0.82 0.24 145), oklch(0.92 0.05 150))",
                 }}
               >
                 <div className="rounded-[15px] bg-card px-8 py-10">
@@ -79,9 +79,9 @@ export default function PricingPage() {
                       className="px-3 py-1 text-sm font-semibold"
                       style={{
                         background:
-                          "linear-gradient(135deg, oklch(0.80 0.20 142 / 0.15), oklch(0.65 0.15 85 / 0.15))",
-                        color: "oklch(0.80 0.20 142)",
-                        border: "1px solid oklch(0.80 0.20 142 / 0.3)",
+                          "linear-gradient(135deg, oklch(0.82 0.24 145 / 0.15), oklch(0.92 0.05 150 / 0.15))",
+                        color: "oklch(0.82 0.24 145)",
+                        border: "1px solid oklch(0.82 0.24 145 / 0.3)",
                       }}
                     >
                       Open Source
@@ -92,7 +92,7 @@ export default function PricingPage() {
                   <div className="mb-2 text-center">
                     <span
                       className="text-7xl font-bold tracking-tight"
-                      style={{ color: "oklch(0.80 0.20 142)" }}
+                      style={{ color: "oklch(0.82 0.24 145)" }}
                     >
                       $0
                     </span>
@@ -105,7 +105,7 @@ export default function PricingPage() {
                       <li key={feature} className="flex items-start gap-3">
                         <Check
                           className="mt-0.5 size-4 shrink-0"
-                          style={{ color: "oklch(0.80 0.20 142)" }}
+                          style={{ color: "oklch(0.82 0.24 145)" }}
                         />
                         <span className="text-sm text-foreground">{feature}</span>
                       </li>
@@ -152,7 +152,7 @@ export default function PricingPage() {
             <ul className="mx-auto flex max-w-2xl flex-wrap justify-center gap-8">
               {TRUST_SIGNALS.map(({ icon: Icon, label }) => (
                 <li key={label} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Icon className="size-4 shrink-0" style={{ color: "oklch(0.80 0.20 142)" }} />
+                  <Icon className="size-4 shrink-0" style={{ color: "oklch(0.82 0.24 145)" }} />
                   {label}
                 </li>
               ))}

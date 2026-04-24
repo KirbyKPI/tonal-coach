@@ -108,7 +108,7 @@ export default function HomePage() {
               className="orb-animated h-[500px] w-[500px] rounded-full blur-[120px] sm:h-[700px] sm:w-[700px]"
               style={{
                 background:
-                  "conic-gradient(from 0deg, oklch(0.80 0.20 142), oklch(0.75 0.12 100), oklch(0.65 0.15 85), oklch(0.80 0.20 142))",
+                  "conic-gradient(from 0deg, oklch(0.82 0.24 145), oklch(0.90 0.08 150), oklch(0.92 0.05 150), oklch(0.82 0.24 145))",
                 animation: "float-orb 20s ease-in-out infinite",
               }}
             />
@@ -118,7 +118,7 @@ export default function HomePage() {
             <h1
               className="anim-fade-up anim-delay-1 text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl"
               style={{
-                background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
+                background: "linear-gradient(135deg, oklch(0.82 0.24 145), oklch(0.92 0.05 150))",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",

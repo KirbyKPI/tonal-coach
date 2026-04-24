@@ -11,7 +11,7 @@ export default function NotFound() {
           width: 400,
           height: 400,
           borderRadius: "50%",
-          background: "radial-gradient(circle, oklch(0.80 0.20 142 / 0.08) 0%, transparent 70%)",
+          background: "radial-gradient(circle, oklch(0.82 0.24 145 / 0.08) 0%, transparent 70%)",
         }}
       />
 
@@ -19,7 +19,7 @@ export default function NotFound() {
         <p
           className="mb-2 text-7xl font-bold tracking-tight"
           style={{
-            background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
+            background: "linear-gradient(135deg, oklch(0.82 0.24 145), oklch(0.92 0.05 150))",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
