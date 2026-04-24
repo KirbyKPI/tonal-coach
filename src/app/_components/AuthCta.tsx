@@ -43,7 +43,7 @@ export function AuthCta({ variant }: { variant: "hero" | "bottom" | "nav" }) {
     <div
       className="inline-block rounded-xl p-[1px]"
       style={{
-        background: "linear-gradient(135deg, oklch(0.78 0.154 195), oklch(0.6 0.22 300))",
+        background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
       }}
     >
       <Button

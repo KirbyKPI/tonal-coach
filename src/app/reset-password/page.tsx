@@ -102,7 +102,7 @@ export default function ResetPasswordPage() {
           className="reset-orb h-[500px] w-[500px] rounded-full blur-[120px] sm:h-[600px] sm:w-[600px]"
           style={{
             background:
-              "conic-gradient(from 0deg, oklch(0.78 0.154 195), oklch(0.65 0.19 265), oklch(0.6 0.22 300), oklch(0.78 0.154 195))",
+              "conic-gradient(from 0deg, oklch(0.80 0.20 142), oklch(0.75 0.12 100), oklch(0.65 0.15 85), oklch(0.80 0.20 142))",
             animation: "float-orb-reset 20s ease-in-out infinite",
           }}
         />
@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
           href="/"
           className="mb-10 block text-center text-2xl font-bold tracking-tight"
           style={{
-            background: "linear-gradient(135deg, oklch(0.78 0.154 195), oklch(0.6 0.22 300))",
+            background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -128,7 +128,7 @@ export default function ResetPasswordPage() {
           className="rounded-2xl p-px"
           style={{
             background:
-              "linear-gradient(135deg, oklch(1 0 0 / 12%), oklch(0.78 0.154 195 / 20%), oklch(1 0 0 / 8%))",
+              "linear-gradient(135deg, oklch(1 0 0 / 12%), oklch(0.80 0.20 142 / 20%), oklch(1 0 0 / 8%))",
           }}
         >
           <div className="rounded-2xl bg-card/80 px-8 py-8 backdrop-blur-xl">

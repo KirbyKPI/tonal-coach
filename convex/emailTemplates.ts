@@ -7,8 +7,8 @@
  */
 
 const BRAND = {
-  /** oklch(0.52 0.14 195) */
-  primary: "#0d7e8c",
+  /** oklch(0.50 0.18 142) — KPI·FIT lime green */
+  primary: "#2d8c0d",
   /** oklch(0.985 0.002 265) */
   background: "#f8f9fc",
   /** oklch(0.155 0.015 265) */

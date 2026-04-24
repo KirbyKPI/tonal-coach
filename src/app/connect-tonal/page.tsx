@@ -104,7 +104,7 @@ function ConnectTonalInner() {
           <div
             className="mx-auto mb-3 flex size-14 items-center justify-center rounded-2xl shadow-lg shadow-primary/10"
             style={{
-              background: "linear-gradient(135deg, oklch(0.78 0.154 195), oklch(0.6 0.22 300))",
+              background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
             }}
           >
             <Link2 className="size-6 text-white" />

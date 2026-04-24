@@ -30,9 +30,9 @@ const RANGES = [
 // ---------------------------------------------------------------------------
 
 const CHART_COLORS = {
-  overall: "oklch(0.78 0.154 195)",
-  upper: "oklch(0.65 0.19 265)",
-  lower: "oklch(0.6 0.22 300)",
+  overall: "oklch(0.80 0.20 142)",
+  upper: "oklch(0.75 0.12 100)",
+  lower: "oklch(0.65 0.15 85)",
   core: "oklch(0.8 0.16 85)",
 } as const;
 

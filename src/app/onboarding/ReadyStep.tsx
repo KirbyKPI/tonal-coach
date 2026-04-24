@@ -33,7 +33,7 @@ export function ReadyStep({
             <div
               className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl shadow-lg shadow-primary/15"
               style={{
-                background: "linear-gradient(135deg, oklch(0.78 0.154 195), oklch(0.6 0.22 300))",
+                background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
               }}
             >
               <ShieldCheck className="size-7 text-white" />
@@ -81,7 +81,7 @@ export function ReadyStep({
           <div
             className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl shadow-lg shadow-primary/15"
             style={{
-              background: "linear-gradient(135deg, oklch(0.78 0.154 195), oklch(0.6 0.22 300))",
+              background: "linear-gradient(135deg, oklch(0.80 0.20 142), oklch(0.65 0.15 85))",
             }}
           >
             <Dumbbell className="size-7 text-white" />

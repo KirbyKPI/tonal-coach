@@ -14,9 +14,9 @@ export function ProductMockup() {
             </div>
             <div
               className="rounded-lg px-3 py-2"
-              style={{ background: "oklch(0.78 0.154 195 / 10%)" }}
+              style={{ background: "oklch(0.80 0.20 142 / 10%)" }}
             >
-              <p className="mb-2 font-medium" style={{ color: "oklch(0.78 0.154 195)" }}>
+              <p className="mb-2 font-medium" style={{ color: "oklch(0.80 0.20 142)" }}>
                 Coach
               </p>
               <p className="text-muted-foreground">
@@ -29,7 +29,7 @@ export function ProductMockup() {
                 <li>Cable Fly — 3x12 @ 27.5 lb (+2.5)</li>
                 <li>Tricep Pushdown — 3x12 @ 42.5 lb</li>
               </ul>
-              <p className="mt-2 text-xs" style={{ color: "oklch(0.78 0.154 195 / 70%)" }}>
+              <p className="mt-2 text-xs" style={{ color: "oklch(0.80 0.20 142 / 70%)" }}>
                 Ready to push to your Tonal?
               </p>
             </div>
@@ -44,7 +44,7 @@ export function ProductMockup() {
           <div className="flex flex-col items-center py-4">
             <span
               className="text-6xl font-bold tracking-tight"
-              style={{ color: "oklch(0.78 0.154 195)" }}
+              style={{ color: "oklch(0.80 0.20 142)" }}
             >
               847
             </span>
@@ -58,7 +58,7 @@ export function ProductMockup() {
                 className="w-4 rounded-sm"
                 style={{
                   height: h,
-                  background: i === 11 ? "oklch(0.78 0.154 195)" : "oklch(0.78 0.154 195 / 30%)",
+                  background: i === 11 ? "oklch(0.80 0.20 142)" : "oklch(0.80 0.20 142 / 30%)",
                 }}
               />
             ))}

@@ -45,7 +45,7 @@ export default function ContactPage() {
           <div className="mb-8 text-center">
             <div
               className="mb-6 inline-flex size-16 items-center justify-center rounded-2xl"
-              style={{ background: "oklch(0.78 0.154 195 / 12%)" }}
+              style={{ background: "oklch(0.80 0.20 142 / 12%)" }}
             >
               <MessageSquare className="size-8 text-primary" />
             </div>
@@ -61,7 +61,7 @@ export default function ContactPage() {
             <div className="rounded-xl bg-card p-8 text-center ring-1 ring-border">
               <div
                 className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full"
-                style={{ background: "oklch(0.78 0.154 195 / 15%)" }}
+                style={{ background: "oklch(0.80 0.20 142 / 15%)" }}
               >
                 <Check className="size-6 text-primary" />
               </div>
