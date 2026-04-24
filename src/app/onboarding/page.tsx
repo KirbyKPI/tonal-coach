@@ -50,7 +50,17 @@ export default function OnboardingPage() {
   const needsByokStep = byokStatus.requiresBYOK && !byokStatus.hasKey;
   const steps = needsByokStep ? BYOK_STEPS : BASE_STEPS;
 
-  // Coach accounts skip straight to ready after connecting
+  // Onboarding fully complete — redirect into the app
+  if (me?.hasTonalProfile && me?.onboardingCompleted && !needsByokStep) {
+    if (me?.isCoachAccount) {
+      router.replace("/coach");
+    } else {
+      router.replace("/chat");
+    }
+    return null;
+  }
+
+  // Coach accounts that finished connecting skip straight to ready
   if (me?.isCoachAccount && me?.hasTonalProfile && me?.onboardingCompleted) {
     return (
       <div className="w-full max-w-lg">
