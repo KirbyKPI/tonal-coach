@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAction, useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -19,7 +19,21 @@ const PHASE_LABELS = {
   done: "Done!",
 } as const;
 
+/**
+ * Next.js 16 requires that any client component reading searchParams during
+ * SSR be wrapped in a Suspense boundary so the static shell can prerender
+ * without bailing to CSR. The actual connect flow lives in ConnectTonalInner;
+ * this default export just provides the boundary.
+ */
 export default function ConnectTonalPage() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <ConnectTonalInner />
+    </Suspense>
+  );
+}
+
+function ConnectTonalInner() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
