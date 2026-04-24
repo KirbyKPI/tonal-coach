@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://KPI·FIT Tonal Coach"),
+  metadataBase: new URL("https://tonal.kpifit.com"),
   title: {
     default: "KPI·FIT Tonal Coach — AI Personal Trainer for Tonal",
     template: "%s | KPI·FIT Tonal Coach",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     "AI coaching powered by your real Tonal training data. Get personalized advice, push custom workouts, and track your progress.",
   openGraph: {
     siteName: "KPI·FIT Tonal Coach",
-    url: "https://KPI·FIT Tonal Coach",
+    url: "https://tonal.kpifit.com",
     locale: "en_US",
     type: "website",
   },

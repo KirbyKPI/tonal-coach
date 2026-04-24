@@ -29,7 +29,7 @@ export function WorkoutJsonLd({ workout, sessionLabel, goalLabel }: WorkoutJsonL
       "@type": "ExercisePlan",
       name: workout.title,
       description: workout.description,
-      url: `https://KPI·FIT Tonal Coach/workouts/${workout.slug}`,
+      url: `https://tonal.kpifit.com/workouts/${workout.slug}`,
       exerciseType: workout.sessionType,
       activityDuration: `PT${workout.durationMinutes}M`,
       intensity: workout.level,
@@ -45,12 +45,12 @@ export function WorkoutJsonLd({ workout, sessionLabel, goalLabel }: WorkoutJsonL
       author: {
         "@type": "Organization",
         name: "KPI·FIT Tonal Coach",
-        url: "https://KPI·FIT Tonal Coach",
+        url: "https://tonal.kpifit.com",
       },
       provider: {
         "@type": "Organization",
         name: "KPI·FIT Tonal Coach",
-        url: "https://KPI·FIT Tonal Coach",
+        url: "https://tonal.kpifit.com",
       },
     },
   ];
@@ -63,19 +63,19 @@ export function WorkoutJsonLd({ workout, sessionLabel, goalLabel }: WorkoutJsonL
         "@type": "ListItem",
         position: 1,
         name: "Workouts",
-        item: "https://KPI·FIT Tonal Coach/workouts",
+        item: "https://tonal.kpifit.com/workouts",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: sessionLabel,
-        item: `https://KPI·FIT Tonal Coach/workouts?sessionType=${workout.sessionType}`,
+        item: `https://tonal.kpifit.com/workouts?sessionType=${workout.sessionType}`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: goalLabel,
-        item: `https://KPI·FIT Tonal Coach/workouts?goal=${workout.goal}`,
+        item: `https://tonal.kpifit.com/workouts?goal=${workout.goal}`,
       },
       {
         "@type": "ListItem",

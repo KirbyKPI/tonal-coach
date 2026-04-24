@@ -29,7 +29,7 @@ const productJsonLd = {
   "@type": "Product",
   name: "KPI·FIT Tonal Coach",
   description: "Free, open-source AI-powered custom workout programming for Tonal home gym owners.",
-  url: "https://KPI·FIT Tonal Coach/pricing",
+  url: "https://tonal.kpifit.com/pricing",
   brand: {
     "@type": "Organization",
     name: "KPI·FIT Tonal Coach",
