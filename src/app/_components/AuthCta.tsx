@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 export function AuthCta({ variant }: { variant: "hero" | "bottom" | "nav" }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
 
-  const href = isAuthenticated ? "/chat" : "/login";
+  const href = "/login";
 
   if (variant === "nav") {
     return (
@@ -16,12 +16,12 @@ export function AuthCta({ variant }: { variant: "hero" | "bottom" | "nav" }) {
         href={href}
         className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:text-foreground"
       >
-        {isAuthenticated ? "Go to Chat" : "Sign In"}
+        Sign In
       </Link>
     );
   }
 
-  const label = isAuthenticated ? "Go to Chat" : "Get Started";
+  const label = isAuthenticated ? "Open App" : "Get Started";
 
   if (variant === "hero") {
     return (
