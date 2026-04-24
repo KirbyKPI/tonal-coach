@@ -24,7 +24,7 @@ export async function sendEmail({
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "KPI·FIT <noreply@kpifit.com>",
+      from: "KPI·FIT <noreply@tonal.coach>",
       to,
       subject,
       html,
