@@ -63,7 +63,7 @@ export default function HomePage() {
             AI-powered custom workouts for your Tonal
           </h1>
 
-          <p className="anim-fade-up anim-delay-2 mx-auto mt-8 max-w-lg text-lg leading-relaxed text-muted-foreground sm:text-xl">
+          <p className="anim-fade-up anim-delay-2 mx-auto mt-8 max-w-lg text-lg leading-relaxed text-foreground sm:text-xl">
             Connect your Tonal account. Tell the AI your goals. Get a personalized program pushed
             directly to your machine every week.
           </p>

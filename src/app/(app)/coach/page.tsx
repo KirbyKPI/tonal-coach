@@ -3,9 +3,11 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { RefreshCw, Users } from "lucide-react";
+import { Loader2, Plus, RefreshCw, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ClientCard } from "./ClientCard";
 import { CoachToolbar } from "./CoachToolbar";
 import { filterAndSort, type SortKey } from "./sortAndFilter";
@@ -13,14 +15,38 @@ import { filterAndSort, type SortKey } from "./sortAndFilter";
 export default function CoachPage() {
   const clients = useQuery(api.coachDashboard.getClientOverviews);
   const setActive = useMutation(api.clientProfiles.setActiveProfile);
+  const addClient = useMutation(api.clientProfiles.addClientProfile);
   const router = useRouter();
 
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name-asc");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [adding, setAdding] = useState(false);
 
   const handleSwitch = async (profileId: Id<"userProfiles">) => {
     await setActive({ profileId });
     router.refresh();
+  };
+
+  const handleAddClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    setAdding(true);
+    try {
+      const profileId = await addClient({ clientLabel: newName.trim(), tonalEmail: newEmail.trim() });
+      setNewName("");
+      setNewEmail("");
+      setShowAddForm(false);
+      // Switch to the new client and navigate to connect their Tonal
+      await setActive({ profileId });
+      router.push(`/connect-tonal?profileId=${profileId}`);
+    } catch {
+      // stay on form so user can retry
+    } finally {
+      setAdding(false);
+    }
   };
 
   const connectedCount = clients?.filter((c) => c.hasConnectedTonal).length ?? 0;
@@ -47,6 +73,12 @@ export default function CoachPage() {
           </p>
         </div>
 
+        <div className="flex items-center gap-4">
+          <Button size="sm" onClick={() => setShowAddForm((v) => !v)}>
+            <Plus className="size-4" />
+            Add Client
+          </Button>
+
         {hasAnyClients && (
           <div className="flex gap-4 text-center">
             <div>
@@ -69,7 +101,38 @@ export default function CoachPage() {
             )}
           </div>
         )}
+        </div>
       </div>
+
+      {/* Add Client Form */}
+      {showAddForm && (
+        <form onSubmit={handleAddClient} className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <p className="text-sm font-medium text-foreground">Add a new client</p>
+          <div className="flex gap-3">
+            <Input
+              placeholder="Client name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              required
+              className="flex-1"
+              autoFocus
+            />
+            <Input
+              placeholder="Tonal email (optional)"
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              className="flex-1"
+            />
+            <Button type="submit" disabled={adding || !newName.trim()}>
+              {adding ? <Loader2 className="size-4 animate-spin" /> : "Add"}
+            </Button>
+            <Button type="button" variant="ghost" onClick={() => setShowAddForm(false)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      )}
 
       {/* Toolbar — only when there's more than one client to sort/filter */}
       {hasAnyClients && clients!.length > 1 && (
@@ -95,7 +158,7 @@ export default function CoachPage() {
           <Users className="mx-auto size-10 text-muted-foreground mb-3" />
           <p className="text-foreground font-medium">No client accounts yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Use the client switcher in the sidebar to add your first client.
+            Click &ldquo;Add Client&rdquo; above to add your first client, or share <span className="font-medium text-foreground">tonal.kpifit.com</span> — new signups appear here automatically.
           </p>
         </div>
       )}
