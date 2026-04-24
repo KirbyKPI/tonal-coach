@@ -3,23 +3,25 @@
 import { useState } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ErrorAlert } from "@/components/ErrorAlert";
 
-type ConnectionPhase = "idle" | "authenticating" | "fetching" | "done";
+type ConnectionPhase = "idle" | "authenticating" | "fetching" | "done" | "coach-setup";
 
 const PHASE_LABELS: Record<Exclude<ConnectionPhase, "idle">, string> = {
   authenticating: "Authenticating with Tonal...",
   fetching: "Pulling your training history...",
+  "coach-setup": "Setting up your coach account...",
   done: "Done!",
 };
 
 export function ConnectStep({ onComplete }: { readonly onComplete: () => void }) {
   const connectTonal = useAction(api.tonal.connectPublic.connectTonal);
+  const skipAsCoach = useAction(api.tonal.connectPublic.skipTonalAsCoach);
   const [tonalEmail, setTonalEmail] = useState("");
   const [tonalPassword, setTonalPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +48,19 @@ export function ConnectStep({ onComplete }: { readonly onComplete: () => void })
       setError(
         "Something went wrong connecting your Tonal account. Please try again or contact support.",
       );
+    }
+  };
+
+  const handleCoachSkip = async () => {
+    setError(null);
+    setPhase("coach-setup");
+    try {
+      await skipAsCoach({});
+      setPhase("done");
+      setTimeout(onComplete, 800);
+    } catch {
+      setPhase("idle");
+      setError("Something went wrong setting up your coach account. Please try again.");
     }
   };
 
@@ -103,6 +118,26 @@ export function ConnectStep({ onComplete }: { readonly onComplete: () => void })
             <p className="text-center text-xs text-muted-foreground">
               Your password is used only to obtain a token. We never store it.
             </p>
+
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              size="lg"
+              onClick={handleCoachSkip}
+            >
+              <ShieldCheck className="size-4" />
+              I&apos;m a coach &mdash; skip Tonal connection
+            </Button>
           </form>
         )}
       </CardContent>

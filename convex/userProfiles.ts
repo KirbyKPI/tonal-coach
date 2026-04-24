@@ -382,6 +382,34 @@ export const updateSyncStatus = internalMutation({
   },
 });
 
+/** Create a bare-bones coach profile that skips Tonal connection entirely. */
+export const createCoachStub = internalMutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    // Bail if the user already has a profile
+    const existing = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+    if (existing) return existing._id;
+
+    const now = Date.now();
+    return await ctx.db.insert("userProfiles", {
+      userId,
+      tonalUserId: `coach-${userId}`,
+      tonalToken: "coach-no-token",
+      isCoachAccount: true,
+      lastActiveAt: now,
+      tonalConnectedAt: now,
+      // Mark onboarding as complete so the coach lands in the app
+      onboardingData: {
+        goal: "coach",
+        completedAt: now,
+      },
+    });
+  },
+});
+
 /** Get thread staleness threshold for a user (server-only). */
 export const getThreadStaleHours = internalQuery({
   args: { userId: v.id("users") },

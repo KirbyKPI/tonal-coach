@@ -9,55 +9,55 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticUrls: MetadataRoute.Sitemap = [
     {
-      url: "https://tonal.coach",
+      url: "https://tonal.kpifit.com",
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1.0,
     },
     {
-      url: "https://tonal.coach/features",
+      url: "https://tonal.kpifit.com/features",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
-      url: "https://tonal.coach/how-it-works",
+      url: "https://tonal.kpifit.com/how-it-works",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
-      url: "https://tonal.coach/workouts",
+      url: "https://tonal.kpifit.com/workouts",
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
-      url: "https://tonal.coach/faq",
+      url: "https://tonal.kpifit.com/faq",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
-      url: "https://tonal.coach/pricing",
+      url: "https://tonal.kpifit.com/pricing",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
-      url: "https://tonal.coach/contact",
+      url: "https://tonal.kpifit.com/contact",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
-      url: "https://tonal.coach/privacy",
+      url: "https://tonal.kpifit.com/privacy",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.3,
     },
     {
-      url: "https://tonal.coach/terms",
+      url: "https://tonal.kpifit.com/terms",
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.3,
@@ -81,7 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       cursor = result.continueCursor;
     }
     workoutUrls = allSlugs.map((slug: string) => ({
-      url: `https://tonal.coach/workouts/${slug}`,
+      url: `https://tonal.kpifit.com/workouts/${slug}`,
       lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.8,

@@ -24,3 +24,16 @@ export const connectTonal = action({
     });
   },
 });
+
+/** Create a coach-only account that skips the Tonal connection entirely. */
+export const skipTonalAsCoach = action({
+  args: {},
+  handler: async (ctx): Promise<{ success: boolean }> => {
+    const userId = await ctx.runQuery(internal.lib.auth.resolveEffectiveUserId, {});
+    if (!userId) throw new Error("Not authenticated");
+
+    await ctx.runMutation(internal.userProfiles.createCoachStub, { userId });
+
+    return { success: true };
+  },
+});

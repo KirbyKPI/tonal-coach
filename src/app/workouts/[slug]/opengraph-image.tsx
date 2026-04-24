@@ -10,7 +10,7 @@ import {
   type LibrarySessionType,
 } from "../../../../convex/coach/goalConfig";
 
-export const alt = "Tonal workout — tonal.coach";
+export const alt = "Tonal workout — KPI·FIT Tonal Coach";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

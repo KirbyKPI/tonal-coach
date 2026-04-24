@@ -96,10 +96,10 @@ export default function LoginPage() {
             backgroundClip: "text",
           }}
         >
-          tonal.coach
+          KPI·FIT
         </Link>
         <h1 className="sr-only">
-          {flow === "signIn" ? "Sign in to tonal.coach" : "Create a tonal.coach account"}
+          {flow === "signIn" ? "Sign in to KPI·FIT" : "Create a KPI·FIT account"}
         </h1>
 
         {/* Glassmorphic card */}

@@ -50,6 +50,15 @@ export default function OnboardingPage() {
   const needsByokStep = byokStatus.requiresBYOK && !byokStatus.hasKey;
   const steps = needsByokStep ? BYOK_STEPS : BASE_STEPS;
 
+  // Coach accounts skip straight to ready after connecting
+  if (me?.isCoachAccount && me?.hasTonalProfile && me?.onboardingCompleted) {
+    return (
+      <div className="w-full max-w-lg">
+        <ReadyStep firstName={me?.tonalName?.split(" ")[0]} isCoach />
+      </div>
+    );
+  }
+
   return (
     <OnboardingFlow
       steps={steps}

@@ -97,7 +97,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  if (me && (!me.hasTonalProfile || !me.onboardingCompleted)) {
+  if (me && !me.isCoachAccount && (!me.hasTonalProfile || !me.onboardingCompleted)) {
     router.replace("/onboarding");
     return null;
   }
@@ -209,7 +209,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <ReconnectModal
-        open={me?.tonalTokenExpired === true && !!me?.tonalEmail && !reconnectDismissed}
+        open={
+          me?.tonalTokenExpired === true &&
+          !!me?.tonalEmail &&
+          !me?.isCoachAccount &&
+          !reconnectDismissed
+        }
         tonalEmail={me?.tonalEmail ?? ""}
         onDismiss={() => setReconnectDismissed(true)}
       />

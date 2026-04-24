@@ -46,6 +46,7 @@ export const getMe = query({
       syncStatus: profile?.syncStatus,
       isMultiClient: allProfiles.length > 1,
       activeProfileId: profile?._id,
+      isCoachAccount: profile?.isCoachAccount ?? false,
     };
   },
 });

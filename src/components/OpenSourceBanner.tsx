@@ -48,7 +48,7 @@ export function OpenSourceBanner() {
     >
       <Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />
       <span className="flex-1">
-        Tonal Coach is now open source. Your account is unchanged.{" "}
+        KPI·FIT Tonal Coach is now open source. Your account is unchanged.{" "}
         <a
           href={repoUrl}
           target="_blank"

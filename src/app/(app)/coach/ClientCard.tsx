@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation } from "convex/react";
-import { AlertCircle, Check, ChevronRight, Pencil, Wifi, WifiOff, X } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  ChevronRight,
+  LayoutDashboard,
+  Pencil,
+  Wifi,
+  WifiOff,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -240,6 +249,16 @@ export function ClientCard({
             >
               {client.isActive ? "Active" : "Switch to"}
             </button>
+
+            <Link
+              href="/dashboard"
+              onClick={() => !client.isActive && onSwitch(client.profileId)}
+              className="flex items-center gap-1 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors duration-150"
+            >
+              <LayoutDashboard className="size-3.5" />
+              Dashboard
+              <ChevronRight className="size-3.5" />
+            </Link>
 
             <Link
               href="/chat"
