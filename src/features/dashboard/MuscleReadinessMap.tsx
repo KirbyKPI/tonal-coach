@@ -98,7 +98,7 @@ export function MuscleReadinessMap({ readiness }: MuscleReadinessMapProps) {
               href={`/chat?prompt=${prompt}`}
               className="text-xs text-primary/80 transition-colors duration-200 hover:text-primary"
             >
-              {label} recovered — program a workout &rarr;
+              {`${label} recovered`} &mdash; program a workout &rarr;
             </Link>
           );
         })()}

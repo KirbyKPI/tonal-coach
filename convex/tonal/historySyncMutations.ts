@@ -86,7 +86,13 @@ export const persistCompletedWorkouts = internalMutation({
           q.eq("userId", userId).eq("activityId", w.activityId),
         )
         .first();
-      if (exists) continue;
+      if (exists) {
+        // Backfill profileId on pre-existing records that lack it
+        if (profileId && !exists.profileId) {
+          await ctx.db.patch(exists._id, { profileId });
+        }
+        continue;
+      }
       await ctx.db.insert("completedWorkouts", {
         userId,
         ...(profileId ? { profileId } : {}),
@@ -115,7 +121,12 @@ export const persistExercisePerformance = internalMutation({
         )
         .filter((q) => q.eq(q.field("movementId"), p.movementId))
         .first();
-      if (existing) continue;
+      if (existing) {
+        if (profileId && !existing.profileId) {
+          await ctx.db.patch(existing._id, { profileId });
+        }
+        continue;
+      }
       await ctx.db.insert("exercisePerformance", {
         userId,
         ...(profileId ? { profileId } : {}),
@@ -139,7 +150,12 @@ export const persistStrengthSnapshots = internalMutation({
         .query("strengthScoreSnapshots")
         .withIndex("by_userId_date", (q) => q.eq("userId", userId).eq("date", s.date))
         .first();
-      if (exists) continue;
+      if (exists) {
+        if (profileId && !exists.profileId) {
+          await ctx.db.patch(exists._id, { profileId });
+        }
+        continue;
+      }
       await ctx.db.insert("strengthScoreSnapshots", {
         userId,
         ...(profileId ? { profileId } : {}),
