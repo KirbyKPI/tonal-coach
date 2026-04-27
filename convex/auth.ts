@@ -7,12 +7,6 @@ export const { auth, signIn, signOut, store } = convexAuth({
   providers: [
     Password({
       reset: ResendOTP(),
-      profile(params) {
-        const raw = params.email as string | undefined;
-        if (!raw) throw new Error("Email is required");
-        const email = raw.trim().toLowerCase();
-        return { email };
-      },
       // Normalize email to lowercase on every auth flow (signUp, signIn,
       // reset, reset-verification) so that case variations can never
       // create duplicate accounts or fail to find existing ones.
@@ -34,10 +28,6 @@ export const { auth, signIn, signOut, store } = convexAuth({
       if (args.existingUserId === null) {
         await rateLimiter.limit(ctx, "newSignup", { throws: true });
       }
-
-      const normalizedEmail = args.profile.email
-        ? args.profile.email.trim().toLowerCase()
-        : undefined;
 
       const normalizedEmail = args.profile.email
         ? args.profile.email.trim().toLowerCase()
