@@ -47,26 +47,19 @@ export default function OnboardingPage() {
 
   if (me === undefined || byokStatus === undefined) return <PageLoader />;
 
+  // Coach accounts skip onboarding entirely — redirect straight to coach page
+  if (me?.isCoachAccount && me?.hasTonalProfile) {
+    router.replace("/coach");
+    return null;
+  }
+
   const needsByokStep = byokStatus.requiresBYOK && !byokStatus.hasKey;
   const steps = needsByokStep ? BYOK_STEPS : BASE_STEPS;
 
   // Onboarding fully complete — redirect into the app
   if (me?.hasTonalProfile && me?.onboardingCompleted && !needsByokStep) {
-    if (me?.isCoachAccount) {
-      router.replace("/coach");
-    } else {
-      router.replace("/chat");
-    }
+    router.replace("/chat");
     return null;
-  }
-
-  // Coach accounts that finished connecting skip straight to ready
-  if (me?.isCoachAccount && me?.hasTonalProfile && me?.onboardingCompleted) {
-    return (
-      <div className="w-full max-w-lg">
-        <ReadyStep firstName={me?.tonalName?.split(" ")[0]} isCoach />
-      </div>
-    );
   }
 
   return (

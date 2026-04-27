@@ -53,7 +53,7 @@ export default function LoginPage() {
     setSubmitting(true);
 
     try {
-      await signIn("password", { email, password, flow });
+      await signIn("password", { email: email.trim().toLowerCase(), password, flow });
       track(flow === "signIn" ? "login_completed" : "signup_completed", { method: "password" });
       router.replace("/chat");
     } catch {

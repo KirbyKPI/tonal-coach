@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
     setSubmitting(true);
 
     try {
-      await signIn("password", { email, flow: "reset" });
+      await signIn("password", { email: email.trim().toLowerCase(), flow: "reset" });
       track("password_reset_requested");
       setStep("enter-code");
     } catch {
@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
 
     try {
       await signIn("password", {
-        email,
+        email: email.trim().toLowerCase(),
         code,
         newPassword,
         flow: "reset-verification",
@@ -301,7 +301,9 @@ export default function ResetPasswordPage() {
                 </div>
 
                 <div className="mb-6 text-center">
-                  <h2 className="text-xl font-semibold text-foreground">Password reset successfully</h2>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Password reset successfully
+                  </h2>
                   <p className="mt-2 text-sm text-muted-foreground">
                     Your password has been updated. You can now sign in with your new password.
                   </p>

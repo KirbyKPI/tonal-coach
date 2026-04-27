@@ -377,10 +377,16 @@ export const getBYOKStatus = query({
     if (!userId) return { requiresBYOK: false, hasKey: false };
     const user = await ctx.db.get(userId);
     if (!user) return { requiresBYOK: false, hasKey: false };
-    const profile = await ctx.db
+
+    // Coach accounts never require BYOK — they use AI through client profiles
+    const allProfiles = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+      .collect();
+    const isCoach = allProfiles.some((p) => p.isCoachAccount === true);
+    if (isCoach) return { requiresBYOK: false, hasKey: true };
+
+    const profile = allProfiles[0] ?? null;
     const hasAnyKey = (["gemini", "claude", "openai", "openrouter"] as const).some(
       (p) => !!profile?.[KEY_FIELD_MAP[p]],
     );

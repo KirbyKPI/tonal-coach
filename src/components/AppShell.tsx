@@ -97,7 +97,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  if (me && !me.isCoachAccount && (!me.hasTonalProfile || !me.onboardingCompleted)) {
+  // Only force onboarding for non-coach users who haven't connected Tonal yet.
+  // Users who already have a synced profile skip onboarding even if the
+  // completedAt flag was never set (e.g. logging in from a new browser).
+  const needsOnboarding =
+    me &&
+    !me.isCoachAccount &&
+    (!me.hasTonalProfile || (!me.onboardingCompleted && !me.syncStatus));
+  if (needsOnboarding) {
     router.replace("/onboarding");
     return null;
   }
@@ -166,7 +173,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Mobile header -- frosted glass */}
           <header className="flex shrink-0 items-center justify-between border-b border-border bg-background/80 px-4 py-3 backdrop-blur-xl lg:hidden">
-            <span className="text-base font-bold tracking-tight text-foreground">KPI<span className="text-primary">·</span>FIT</span>
+            <span className="text-base font-bold tracking-tight text-foreground">
+              KPI<span className="text-primary">·</span>FIT
+            </span>
             <CheckInBell />
           </header>
 

@@ -83,12 +83,13 @@ export const changePassword = action({
 
     const user = await ctx.runQuery(internal.account.getUserEmail, { userId });
     if (!user?.email) throw new Error("No email found for account");
+    const emailId = user.email.trim().toLowerCase();
 
     // Verify old password
     try {
       await retrieveAccount(ctx, {
         provider: "password",
-        account: { id: user.email, secret: oldPassword },
+        account: { id: emailId, secret: oldPassword },
       });
     } catch {
       throw new Error("Current password is incorrect");
@@ -97,7 +98,7 @@ export const changePassword = action({
     // Set new password
     await modifyAccountCredentials(ctx, {
       provider: "password",
-      account: { id: user.email, secret: newPassword },
+      account: { id: emailId, secret: newPassword },
     });
   },
 });
@@ -107,11 +108,12 @@ export const changePassword = action({
 export const adminResetPassword = action({
   args: { email: v.string(), newPassword: v.string() },
   handler: async (ctx, { email, newPassword }) => {
+    const normalizedEmail = email.trim().toLowerCase();
     await modifyAccountCredentials(ctx, {
       provider: "password",
-      account: { id: email, secret: newPassword },
+      account: { id: normalizedEmail, secret: newPassword },
     });
-    return { success: true, email };
+    return { success: true, email: normalizedEmail };
   },
 });
 
