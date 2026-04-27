@@ -72,8 +72,12 @@ export const getExistingActivityIds = internalQuery({
 
 /** Insert new completed workouts (skips duplicates by activityId). */
 export const persistCompletedWorkouts = internalMutation({
-  args: { userId: v.id("users"), workouts: v.array(workoutValidator) },
-  handler: async (ctx, { userId, workouts }) => {
+  args: {
+    userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
+    workouts: v.array(workoutValidator),
+  },
+  handler: async (ctx, { userId, profileId, workouts }) => {
     let inserted = 0;
     for (const w of workouts) {
       const exists = await ctx.db
@@ -83,7 +87,12 @@ export const persistCompletedWorkouts = internalMutation({
         )
         .first();
       if (exists) continue;
-      await ctx.db.insert("completedWorkouts", { userId, ...w, syncedAt: Date.now() });
+      await ctx.db.insert("completedWorkouts", {
+        userId,
+        ...(profileId ? { profileId } : {}),
+        ...w,
+        syncedAt: Date.now(),
+      });
       inserted++;
     }
     return inserted;
@@ -92,8 +101,12 @@ export const persistCompletedWorkouts = internalMutation({
 
 /** Insert per-exercise performance rows (skips duplicates by activityId + movementId). */
 export const persistExercisePerformance = internalMutation({
-  args: { userId: v.id("users"), performances: v.array(performanceValidator) },
-  handler: async (ctx, { userId, performances }) => {
+  args: {
+    userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
+    performances: v.array(performanceValidator),
+  },
+  handler: async (ctx, { userId, profileId, performances }) => {
     for (const p of performances) {
       const existing = await ctx.db
         .query("exercisePerformance")
@@ -103,22 +116,36 @@ export const persistExercisePerformance = internalMutation({
         .filter((q) => q.eq(q.field("movementId"), p.movementId))
         .first();
       if (existing) continue;
-      await ctx.db.insert("exercisePerformance", { userId, ...p, syncedAt: Date.now() });
+      await ctx.db.insert("exercisePerformance", {
+        userId,
+        ...(profileId ? { profileId } : {}),
+        ...p,
+        syncedAt: Date.now(),
+      });
     }
   },
 });
 
 /** Insert strength score snapshots (skips duplicates by userId + date). */
 export const persistStrengthSnapshots = internalMutation({
-  args: { userId: v.id("users"), snapshots: v.array(snapshotValidator) },
-  handler: async (ctx, { userId, snapshots }) => {
+  args: {
+    userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
+    snapshots: v.array(snapshotValidator),
+  },
+  handler: async (ctx, { userId, profileId, snapshots }) => {
     for (const s of snapshots) {
       const exists = await ctx.db
         .query("strengthScoreSnapshots")
         .withIndex("by_userId_date", (q) => q.eq("userId", userId).eq("date", s.date))
         .first();
       if (exists) continue;
-      await ctx.db.insert("strengthScoreSnapshots", { userId, ...s, syncedAt: Date.now() });
+      await ctx.db.insert("strengthScoreSnapshots", {
+        userId,
+        ...(profileId ? { profileId } : {}),
+        ...s,
+        syncedAt: Date.now(),
+      });
     }
   },
 });
@@ -160,45 +187,79 @@ export const externalActivityValidator = v.object({
 
 /** Replace all current strength scores for a user (delete old, insert fresh). */
 export const persistCurrentStrengthScores = internalMutation({
-  args: { userId: v.id("users"), scores: v.array(strengthScoreValidator) },
-  handler: async (ctx, { userId, scores }) => {
-    const existing = await ctx.db
-      .query("currentStrengthScores")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
+  args: {
+    userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
+    scores: v.array(strengthScoreValidator),
+  },
+  handler: async (ctx, { userId, profileId, scores }) => {
+    // When profileId is available, scope deletion to that profile; otherwise fall back to userId
+    const existing = profileId
+      ? await ctx.db
+          .query("currentStrengthScores")
+          .withIndex("by_profileId", (q) => q.eq("profileId", profileId))
+          .collect()
+      : await ctx.db
+          .query("currentStrengthScores")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .collect();
     for (const row of existing) {
       await ctx.db.delete(row._id);
     }
     const now = Date.now();
     for (const s of scores) {
-      await ctx.db.insert("currentStrengthScores", { userId, ...s, fetchedAt: now });
+      await ctx.db.insert("currentStrengthScores", {
+        userId,
+        ...(profileId ? { profileId } : {}),
+        ...s,
+        fetchedAt: now,
+      });
     }
   },
 });
 
 /** Replace the muscle readiness snapshot for a user (single row). */
 export const persistMuscleReadiness = internalMutation({
-  args: { userId: v.id("users"), readiness: muscleReadinessValidator },
-  handler: async (ctx, { userId, readiness }) => {
-    const existing = await ctx.db
-      .query("muscleReadiness")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+  args: {
+    userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
+    readiness: muscleReadinessValidator,
+  },
+  handler: async (ctx, { userId, profileId, readiness }) => {
+    const existing = profileId
+      ? await ctx.db
+          .query("muscleReadiness")
+          .withIndex("by_profileId", (q) => q.eq("profileId", profileId))
+          .first()
+      : await ctx.db
+          .query("muscleReadiness")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .first();
     if (existing) {
       await ctx.db.delete(existing._id);
     }
-    await ctx.db.insert("muscleReadiness", { userId, ...readiness, fetchedAt: Date.now() });
+    await ctx.db.insert("muscleReadiness", {
+      userId,
+      ...(profileId ? { profileId } : {}),
+      ...readiness,
+      fetchedAt: Date.now(),
+    });
   },
 });
 
 /** Clear muscle readiness data for a user (when API returns null). */
 export const clearMuscleReadiness = internalMutation({
-  args: { userId: v.id("users") },
-  handler: async (ctx, { userId }) => {
-    const existing = await ctx.db
-      .query("muscleReadiness")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+  args: { userId: v.id("users"), profileId: v.optional(v.id("userProfiles")) },
+  handler: async (ctx, { userId, profileId }) => {
+    const existing = profileId
+      ? await ctx.db
+          .query("muscleReadiness")
+          .withIndex("by_profileId", (q) => q.eq("profileId", profileId))
+          .first()
+      : await ctx.db
+          .query("muscleReadiness")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .first();
     if (existing) {
       await ctx.db.delete(existing._id);
     }
@@ -207,8 +268,12 @@ export const clearMuscleReadiness = internalMutation({
 
 /** Upsert external activities by externalId (insert new, update existing). */
 export const persistExternalActivities = internalMutation({
-  args: { userId: v.id("users"), activities: v.array(externalActivityValidator) },
-  handler: async (ctx, { userId, activities }) => {
+  args: {
+    userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
+    activities: v.array(externalActivityValidator),
+  },
+  handler: async (ctx, { userId, profileId, activities }) => {
     const now = Date.now();
     for (const a of activities) {
       const existing = await ctx.db
@@ -218,9 +283,19 @@ export const persistExternalActivities = internalMutation({
         )
         .first();
       if (existing) {
-        await ctx.db.replace(existing._id, { userId, ...a, syncedAt: now });
+        await ctx.db.replace(existing._id, {
+          userId,
+          ...(profileId ? { profileId } : {}),
+          ...a,
+          syncedAt: now,
+        });
       } else {
-        await ctx.db.insert("externalActivities", { userId, ...a, syncedAt: now });
+        await ctx.db.insert("externalActivities", {
+          userId,
+          ...(profileId ? { profileId } : {}),
+          ...a,
+          syncedAt: now,
+        });
       }
     }
   },

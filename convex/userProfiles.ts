@@ -295,12 +295,19 @@ export const getLastSyncedActivityDate = internalQuery({
 
 /** Update the high-water mark after a successful history sync. */
 export const updateLastSyncedActivityDate = internalMutation({
-  args: { userId: v.id("users"), date: v.string() },
-  handler: async (ctx, { userId, date }) => {
-    const profile = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+  args: {
+    userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
+    date: v.string(),
+  },
+  handler: async (ctx, { userId, profileId, date }) => {
+    // When profileId is provided, update that specific profile (multi-client)
+    const profile = profileId
+      ? await ctx.db.get(profileId)
+      : await ctx.db
+          .query("userProfiles")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .first();
     if (!profile) throw new Error("User profile not found");
     await ctx.db.patch(profile._id, { lastSyncedActivityDate: date });
   },
@@ -370,55 +377,19 @@ export const releaseTokenRefreshLock = internalMutation({
 export const updateSyncStatus = internalMutation({
   args: {
     userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
     syncStatus: v.union(v.literal("syncing"), v.literal("complete"), v.literal("failed")),
   },
-  handler: async (ctx, { userId, syncStatus }) => {
-    const profile = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+  handler: async (ctx, { userId, profileId, syncStatus }) => {
+    const profile = profileId
+      ? await ctx.db.get(profileId)
+      : await ctx.db
+          .query("userProfiles")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .first();
     if (!profile) return;
     await ctx.db.patch(profile._id, { syncStatus });
   },
 });
 
-/** Create a bare-bones coach profile that skips Tonal connection entirely. */
-export const createCoachStub = internalMutation({
-  args: { userId: v.id("users") },
-  handler: async (ctx, { userId }) => {
-    // Bail if the user already has a profile
-    const existing = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    if (existing) return existing._id;
-
-    const now = Date.now();
-    return await ctx.db.insert("userProfiles", {
-      userId,
-      tonalUserId: `coach-${userId}`,
-      tonalToken: "coach-no-token",
-      isCoachAccount: true,
-      clientLabel: "Coach Account",
-      lastActiveAt: now,
-      tonalConnectedAt: now,
-      // Mark onboarding as complete so the coach lands in the app
-      onboardingData: {
-        goal: "coach",
-        completedAt: now,
-      },
-    });
-  },
-});
-
-/** Get thread staleness threshold for a user (server-only). */
-export const getThreadStaleHours = internalQuery({
-  args: { userId: v.id("users") },
-  handler: async (ctx, { userId }) => {
-    const profile = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    return profile?.threadStaleHours ?? 24;
-  },
-});
+// createCoachStub and getThreadStaleHours moved to userProfileHelpers.ts

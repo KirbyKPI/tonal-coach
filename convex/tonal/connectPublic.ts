@@ -41,7 +41,7 @@ export const skipTonalAsCoach = action({
       throw new Error("Coach access is restricted.");
     }
 
-    await ctx.runMutation(internal.userProfiles.createCoachStub, { userId });
+    await ctx.runMutation(internal.userProfileHelpers.createCoachStub, { userId });
 
     return { success: true };
   },

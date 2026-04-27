@@ -402,6 +402,7 @@ export default defineSchema({
   /** Permanent record of completed Tonal workouts (synced from activity history). */
   completedWorkouts: defineTable({
     userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
     activityId: v.string(),
     date: v.string(),
     title: v.string(),
@@ -415,11 +416,14 @@ export default defineSchema({
   })
     .index("by_userId_activityId", ["userId", "activityId"])
     .index("by_userId_date", ["userId", "date"])
-    .index("by_userId", ["userId"]),
+    .index("by_userId", ["userId"])
+    .index("by_profileId", ["profileId"])
+    .index("by_profileId_date", ["profileId", "date"]),
 
   /** Per-exercise performance snapshots from each completed workout. */
   exercisePerformance: defineTable({
     userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
     activityId: v.string(),
     movementId: v.string(),
     date: v.string(),
@@ -431,11 +435,14 @@ export default defineSchema({
   })
     .index("by_userId_movementId", ["userId", "movementId"])
     .index("by_userId_activityId", ["userId", "activityId"])
-    .index("by_userId_date", ["userId", "date"]),
+    .index("by_userId_date", ["userId", "date"])
+    .index("by_profileId", ["profileId"])
+    .index("by_profileId_movementId", ["profileId", "movementId"]),
 
   /** Strength score snapshots over time (synced from Tonal history). */
   strengthScoreSnapshots: defineTable({
     userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
     date: v.string(),
     overall: v.number(),
     upper: v.number(),
@@ -445,17 +452,23 @@ export default defineSchema({
     syncedAt: v.number(),
   })
     .index("by_userId_date", ["userId", "date"])
-    .index("by_userId", ["userId"]),
+    .index("by_userId", ["userId"])
+    .index("by_profileId", ["profileId"])
+    .index("by_profileId_date", ["profileId", "date"]),
 
   currentStrengthScores: defineTable({
     userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
     bodyRegion: v.string(),
     score: v.number(),
     fetchedAt: v.number(),
-  }).index("by_userId", ["userId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_profileId", ["profileId"]),
 
   muscleReadiness: defineTable({
     userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
     chest: v.number(),
     shoulders: v.number(),
     back: v.number(),
@@ -468,10 +481,13 @@ export default defineSchema({
     hamstrings: v.number(),
     calves: v.number(),
     fetchedAt: v.number(),
-  }).index("by_userId", ["userId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_profileId", ["profileId"]),
 
   externalActivities: defineTable({
     userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
     externalId: v.string(),
     workoutType: v.string(),
     beginTime: v.string(),
@@ -484,7 +500,8 @@ export default defineSchema({
     syncedAt: v.number(),
   })
     .index("by_userId_externalId", ["userId", "externalId"])
-    .index("by_userId_beginTime", ["userId", "beginTime"]),
+    .index("by_userId_beginTime", ["userId", "beginTime"])
+    .index("by_profileId", ["profileId"]),
 
   /** Pre-generated workout library entries for SEO and inspiration. */
   libraryWorkouts: defineTable({

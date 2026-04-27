@@ -40,6 +40,8 @@ export async function buildTrainingSnapshot(
     return "No Tonal profile linked yet. Ask the user to connect their Tonal account.";
   }
 
+  const profileId = profile._id;
+
   // Parallel fetch: Tonal data + coaching data + movement catalog
   const [
     scores,
@@ -53,14 +55,21 @@ export async function buildTrainingSnapshot(
     movementCatalog,
   ] = await Promise.all([
     ctx
-      .runQuery(internal.tonal.syncQueries.getCurrentStrengthScores, { userId: convexUserId })
+      .runQuery(internal.tonal.syncQueries.getCurrentStrengthScores, {
+        userId: convexUserId,
+        profileId,
+      })
       .catch(() => []),
     ctx
-      .runQuery(internal.tonal.syncQueries.getMuscleReadiness, { userId: convexUserId })
+      .runQuery(internal.tonal.syncQueries.getMuscleReadiness, {
+        userId: convexUserId,
+        profileId,
+      })
       .catch(() => null),
     ctx
       .runQuery(internal.tonal.syncQueries.getRecentCompletedWorkouts, {
         userId: convexUserId,
+        profileId,
         limit: 20,
       })
       .catch(() => []),

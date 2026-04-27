@@ -170,7 +170,9 @@ export const createThreadWithMessage = action({
       throws: true,
     });
 
-    const staleHours = await ctx.runQuery(internal.userProfiles.getThreadStaleHours, { userId });
+    const staleHours = await ctx.runQuery(internal.userProfileHelpers.getThreadStaleHours, {
+      userId,
+    });
     const staleMs = staleHours * 60 * 60 * 1000;
 
     // Validate key early so BYOK errors surface before the thread is created.

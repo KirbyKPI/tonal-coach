@@ -81,6 +81,7 @@ export const connectTonal = internalAction({
     // 9. Backfill historical training data (non-blocking)
     await ctx.scheduler.runAfter(0, internal.tonal.historySync.backfillUserHistory, {
       userId,
+      profileId,
     });
 
     // 10. Auto-add as client in the coach's dashboard (if not the coach themselves)

@@ -41,9 +41,10 @@ export const getClientOverviews = query({
           .order("desc")
           .first();
 
+        // Use profileId index when available to scope data to the correct client
         const latestWorkout = await ctx.db
           .query("completedWorkouts")
-          .withIndex("by_userId", (q) => q.eq("userId", profile.userId))
+          .withIndex("by_profileId", (q) => q.eq("profileId", profile._id))
           .order("desc")
           .first();
 
@@ -62,7 +63,7 @@ export const getClientOverviews = query({
 
         const latestStrength = await ctx.db
           .query("strengthScoreSnapshots")
-          .withIndex("by_userId", (q) => q.eq("userId", profile.userId))
+          .withIndex("by_profileId", (q) => q.eq("profileId", profile._id))
           .order("desc")
           .first();
 
@@ -124,9 +125,10 @@ export const getCoachOverview = query({
           ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
           : (profile.clientLabel ?? "Unnamed");
 
+        // Use profileId index to scope data to the correct client
         const recentWorkouts = await ctx.db
           .query("completedWorkouts")
-          .withIndex("by_userId", (q) => q.eq("userId", profile.userId))
+          .withIndex("by_profileId", (q) => q.eq("profileId", profile._id))
           .order("desc")
           .take(50);
 
@@ -144,13 +146,13 @@ export const getCoachOverview = query({
 
         const latestStrength = await ctx.db
           .query("strengthScoreSnapshots")
-          .withIndex("by_userId", (q) => q.eq("userId", profile.userId))
+          .withIndex("by_profileId", (q) => q.eq("profileId", profile._id))
           .order("desc")
           .first();
 
         const prevStrength = await ctx.db
           .query("strengthScoreSnapshots")
-          .withIndex("by_userId", (q) => q.eq("userId", profile.userId))
+          .withIndex("by_profileId", (q) => q.eq("profileId", profile._id))
           .order("desc")
           .take(2);
 

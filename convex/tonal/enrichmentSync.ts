@@ -11,11 +11,15 @@ import type { ExternalActivity, MuscleReadiness, StrengthScore } from "./types";
 
 /** Fetch current strength scores, muscle readiness, and external activities, then persist to DB.
  *  Returns the number of datasets that failed to fetch (0 = all succeeded). */
-export async function persistNewTableData(ctx: ActionCtx, userId: Id<"users">): Promise<number> {
+export async function persistNewTableData(
+  ctx: ActionCtx,
+  userId: Id<"users">,
+  profileId?: Id<"userProfiles">,
+): Promise<number> {
   const results = await Promise.allSettled([
-    ctx.runAction(internal.tonal.proxy.fetchStrengthScores, { userId }),
-    ctx.runAction(internal.tonal.proxy.fetchMuscleReadiness, { userId }),
-    ctx.runAction(internal.tonal.proxy.fetchExternalActivities, { userId, limit: 20 }),
+    ctx.runAction(internal.tonal.proxy.fetchStrengthScores, { userId, profileId }),
+    ctx.runAction(internal.tonal.proxy.fetchMuscleReadiness, { userId, profileId }),
+    ctx.runAction(internal.tonal.proxy.fetchExternalActivities, { userId, profileId, limit: 20 }),
   ]);
 
   let failures = 0;
@@ -25,6 +29,7 @@ export async function persistNewTableData(ctx: ActionCtx, userId: Id<"users">): 
     const scores = results[0].value as StrengthScore[];
     await ctx.runMutation(internal.tonal.historySyncMutations.persistCurrentStrengthScores, {
       userId,
+      profileId,
       scores: scores.map((s) => ({ bodyRegion: s.bodyRegionDisplay, score: s.score })),
     });
   } else {
@@ -38,6 +43,7 @@ export async function persistNewTableData(ctx: ActionCtx, userId: Id<"users">): 
     if (mr) {
       await ctx.runMutation(internal.tonal.historySyncMutations.persistMuscleReadiness, {
         userId,
+        profileId,
         readiness: {
           chest: mr.Chest,
           shoulders: mr.Shoulders,
@@ -53,7 +59,10 @@ export async function persistNewTableData(ctx: ActionCtx, userId: Id<"users">): 
         },
       });
     } else {
-      await ctx.runMutation(internal.tonal.historySyncMutations.clearMuscleReadiness, { userId });
+      await ctx.runMutation(internal.tonal.historySyncMutations.clearMuscleReadiness, {
+        userId,
+        profileId,
+      });
     }
   } else {
     console.error("[historySync] Muscle readiness fetch failed", results[1].reason);
@@ -66,6 +75,7 @@ export async function persistNewTableData(ctx: ActionCtx, userId: Id<"users">): 
     if (activities.length > 0) {
       await ctx.runMutation(internal.tonal.historySyncMutations.persistExternalActivities, {
         userId,
+        profileId,
         activities: activities.map((a) => ({
           externalId: a.externalId,
           workoutType: a.workoutType,

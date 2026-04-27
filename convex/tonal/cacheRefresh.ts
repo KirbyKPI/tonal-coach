@@ -13,6 +13,7 @@ export const refreshActiveUsers = internalAction({
       try {
         await ctx.runAction(internal.tonal.historySync.syncUserHistory, {
           userId: profile.userId,
+          profileId: profile._id,
         });
       } catch (error) {
         console.error(`Failed to refresh data for user ${profile.userId}:`, error);

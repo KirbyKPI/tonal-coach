@@ -13,8 +13,14 @@ export const CACHE_TTLS: Record<string, number> = {
 };
 
 export const getUserProfile = internalQuery({
-  args: { userId: v.id("users") },
-  handler: async (ctx, { userId }) => {
+  args: { userId: v.id("users"), profileId: v.optional(v.id("userProfiles")) },
+  handler: async (ctx, { userId, profileId }) => {
+    // When a specific profileId is provided (e.g. cron syncing a specific client),
+    // return that exact profile instead of the user's currently-active one.
+    if (profileId) {
+      const specific = await ctx.db.get(profileId);
+      if (specific && specific.userId === userId) return specific;
+    }
     // Multi-client: respect the active profile selection (mirrors users.ts logic)
     const user = await ctx.db.get(userId);
     if (user?.activeClientProfileId) {

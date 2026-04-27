@@ -38,6 +38,7 @@ async function processOneActivity(
   ctx: ActionCtx,
   userId: Id<"users">,
   activity: Activity,
+  profileId?: Id<"userProfiles">,
 ): Promise<{ workout: WorkoutPayload; performances: PerformancePayload[] }> {
   const { activityId, activityTime, workoutPreview: p } = activity;
   const date = activityTime.slice(0, 10);
@@ -58,6 +59,7 @@ async function processOneActivity(
   try {
     detail = (await ctx.runAction(internal.tonal.proxy.fetchWorkoutDetail, {
       userId,
+      profileId,
       activityId,
     })) as WorkoutActivityDetail | null;
   } catch (err) {
@@ -70,6 +72,7 @@ async function processOneActivity(
   try {
     const summary = (await ctx.runAction(internal.tonal.proxy.fetchFormattedSummary, {
       userId,
+      profileId,
       summaryId: activityId,
     })) as FormattedWorkoutSummary;
     volumeByMovement = new Map<string, number>();
@@ -102,6 +105,7 @@ async function fetchAndBuildPayloads(
   ctx: ActionCtx,
   userId: Id<"users">,
   activities: Activity[],
+  profileId?: Id<"userProfiles">,
 ): Promise<{ workouts: WorkoutPayload[]; performances: PerformancePayload[] }> {
   const workouts: WorkoutPayload[] = [];
   const performances: PerformancePayload[] = [];
@@ -110,7 +114,9 @@ async function fetchAndBuildPayloads(
     if (i > 0) await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
     const batch = activities.slice(i, i + DETAIL_BATCH_SIZE);
 
-    const results = await Promise.allSettled(batch.map((a) => processOneActivity(ctx, userId, a)));
+    const results = await Promise.allSettled(
+      batch.map((a) => processOneActivity(ctx, userId, a, profileId)),
+    );
     for (const result of results) {
       if (result.status === "fulfilled") {
         workouts.push(result.value.workout);
@@ -132,6 +138,7 @@ async function syncActivitiesAndStrength(
   ctx: ActionCtx,
   userId: Id<"users">,
   activities: Activity[],
+  profileId?: Id<"userProfiles">,
 ): Promise<number> {
   const allIds = activities.map((a) => a.activityId);
   const existingIds: string[] = await ctx.runQuery(
@@ -142,16 +149,23 @@ async function syncActivitiesAndStrength(
   const newActivities = activities.filter((a) => !existingSet.has(a.activityId));
 
   if (newActivities.length > 0) {
-    const { workouts, performances } = await fetchAndBuildPayloads(ctx, userId, newActivities);
+    const { workouts, performances } = await fetchAndBuildPayloads(
+      ctx,
+      userId,
+      newActivities,
+      profileId,
+    );
     if (workouts.length > 0) {
       await ctx.runMutation(internal.tonal.historySyncMutations.persistCompletedWorkouts, {
         userId,
+        profileId,
         workouts,
       });
     }
     if (performances.length > 0) {
       await ctx.runMutation(internal.tonal.historySyncMutations.persistExercisePerformance, {
         userId,
+        profileId,
         performances,
       });
     }
@@ -161,9 +175,7 @@ async function syncActivitiesAndStrength(
   try {
     const strengthHistory: StrengthScoreHistoryEntry[] = await ctx.runAction(
       internal.tonal.proxy.fetchStrengthHistory,
-      {
-        userId,
-      },
+      { userId, profileId },
     );
     if (strengthHistory.length > 0) {
       const snapshots = strengthHistory.map((entry) => ({
@@ -176,6 +188,7 @@ async function syncActivitiesAndStrength(
       }));
       await ctx.runMutation(internal.tonal.historySyncMutations.persistStrengthSnapshots, {
         userId,
+        profileId,
         snapshots,
       });
     }
@@ -187,6 +200,7 @@ async function syncActivitiesAndStrength(
   const newestDate = activities[0].activityTime.slice(0, 10);
   await ctx.runMutation(internal.userProfiles.updateLastSyncedActivityDate, {
     userId,
+    profileId,
     date: newestDate,
   });
 
@@ -194,13 +208,17 @@ async function syncActivitiesAndStrength(
 }
 
 /** Refresh profile data from Tonal API if >24h old. */
-async function maybeRefreshProfile(ctx: ActionCtx, userId: Id<"users">): Promise<void> {
+async function maybeRefreshProfile(
+  ctx: ActionCtx,
+  userId: Id<"users">,
+  profileId?: Id<"userProfiles">,
+): Promise<void> {
   const profile = await ctx.runQuery(internal.userProfiles.getByUserId, { userId });
   if (!profile) return;
   if (Date.now() - (profile.profileDataRefreshedAt ?? 0) < PROFILE_REFRESH_INTERVAL_MS) return;
 
   try {
-    const u = await ctx.runAction(internal.tonal.proxy.fetchUserProfile, { userId });
+    const u = await ctx.runAction(internal.tonal.proxy.fetchUserProfile, { userId, profileId });
     await ctx.runMutation(internal.userProfiles.updateProfileData, {
       userId,
       profileData: toUserProfileData(u),
@@ -216,23 +234,24 @@ async function maybeRefreshProfile(ctx: ActionCtx, userId: Id<"users">): Promise
 
 /** Incremental sync: persist new workouts since last sync. Called by cron. */
 export const syncUserHistory = internalAction({
-  args: { userId: v.id("users") },
-  handler: async (ctx, { userId }) => {
+  args: { userId: v.id("users"), profileId: v.optional(v.id("userProfiles")) },
+  handler: async (ctx, { userId, profileId }) => {
     const activities: Activity[] = await ctx.runAction(internal.tonal.proxy.fetchWorkoutHistory, {
       userId,
+      profileId,
       limit: 20,
     });
 
     let synced = 0;
     if (activities.length > 0) {
-      synced = await syncActivitiesAndStrength(ctx, userId, activities);
+      synced = await syncActivitiesAndStrength(ctx, userId, activities, profileId);
     }
 
     // Persist strength scores, muscle readiness, and external activities to DB
-    await persistNewTableData(ctx, userId);
+    await persistNewTableData(ctx, userId, profileId);
 
     // Always refresh profile (catches weight changes, etc.)
-    await maybeRefreshProfile(ctx, userId);
+    await maybeRefreshProfile(ctx, userId, profileId);
 
     if (synced > 0) {
       console.log(`[historySync] Synced ${synced} new workouts for user ${userId}`);
@@ -248,14 +267,19 @@ const BACKFILL_RETRY_DELAYS = [30_000, 60_000, 120_000];
 
 /** One-shot backfill on Tonal connect. Fetches deeper history. Retries on failure. */
 export const backfillUserHistory = internalAction({
-  args: { userId: v.id("users"), retryCount: v.optional(v.number()) },
+  args: {
+    userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
+    retryCount: v.optional(v.number()),
+  },
   handler: async (
     ctx,
-    { userId, retryCount = 0 },
+    { userId, profileId, retryCount = 0 },
   ): Promise<{ newWorkouts: number; totalActivities: number }> => {
     if (retryCount === 0) {
       await ctx.runMutation(internal.userProfiles.updateSyncStatus, {
         userId,
+        profileId,
         syncStatus: "syncing",
       });
     }
@@ -263,20 +287,22 @@ export const backfillUserHistory = internalAction({
     try {
       const activities: Activity[] = await ctx.runAction(internal.tonal.proxy.fetchWorkoutHistory, {
         userId,
+        profileId,
         limit: 100,
       });
 
       let synced = 0;
       if (activities.length > 0) {
-        synced = await syncActivitiesAndStrength(ctx, userId, activities);
+        synced = await syncActivitiesAndStrength(ctx, userId, activities, profileId);
       }
 
-      const enrichmentFailures = await persistNewTableData(ctx, userId);
+      const enrichmentFailures = await persistNewTableData(ctx, userId, profileId);
 
-      await maybeRefreshProfile(ctx, userId);
+      await maybeRefreshProfile(ctx, userId, profileId);
 
       await ctx.runMutation(internal.userProfiles.updateSyncStatus, {
         userId,
+        profileId,
         syncStatus: enrichmentFailures >= 3 ? "failed" : "complete",
       });
 
@@ -298,6 +324,7 @@ export const backfillUserHistory = internalAction({
         const delay = BACKFILL_RETRY_DELAYS[retryCount] ?? 120_000;
         await ctx.scheduler.runAfter(delay, internal.tonal.historySync.backfillUserHistory, {
           userId,
+          profileId,
           retryCount: retryCount + 1,
         });
         return { newWorkouts: 0, totalActivities: 0 };
@@ -305,6 +332,7 @@ export const backfillUserHistory = internalAction({
 
       await ctx.runMutation(internal.userProfiles.updateSyncStatus, {
         userId,
+        profileId,
         syncStatus: "failed",
       });
 

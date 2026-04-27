@@ -56,8 +56,9 @@ export async function withTokenRetry<T>(
   ctx: ActionCtx,
   userId: Id<"users">,
   fn: (token: string, tonalUserId: string) => Promise<T>,
+  profileId?: Id<"userProfiles">,
 ): Promise<T> {
-  const { token, tonalUserId } = await withTonalToken(ctx, userId);
+  const { token, tonalUserId } = await withTonalToken(ctx, userId, profileId);
 
   try {
     return await fn(token, tonalUserId);
@@ -66,7 +67,10 @@ export async function withTokenRetry<T>(
       throw error;
     }
 
-    const profile = await ctx.runQuery(internal.tonal.cache.getUserProfile, { userId });
+    const profile = await ctx.runQuery(internal.tonal.cache.getUserProfile, {
+      userId,
+      profileId,
+    });
     if (!profile?.tonalRefreshToken) {
       return markExpiredAndThrow(ctx, userId);
     }
@@ -81,6 +85,7 @@ export async function withTokenRetry<T>(
       const { token: retryToken, tonalUserId: retryTonalUserId } = await withTonalToken(
         ctx,
         userId,
+        profileId,
       );
       return fn(retryToken, retryTonalUserId);
     }
