@@ -20,14 +20,13 @@ export const { auth, signIn, signOut, store } = convexAuth({
   ],
   callbacks: {
     async createOrUpdateUser(ctx, args) {
-      // Blunt abuse deterrent. Only run on actual account creation, not on
-      // updates to an existing user. If the global bucket is empty, the
-      // caller sees a clear rate-limit error and the auth library rolls
-      // back the half-created auth account (which is why we throw before
-      // inserting the users row).
-      if (args.existingUserId === null) {
-        await rateLimiter.limit(ctx, "newSignup", { throws: true });
+      // Existing user signing in — return their ID, nothing to create
+      if (args.existingUserId !== null) {
+        return args.existingUserId;
       }
+
+      // New signup — rate-limit to deter abuse
+      await rateLimiter.limit(ctx, "newSignup", { throws: true });
 
       const normalizedEmail = args.profile.email
         ? args.profile.email.trim().toLowerCase()
