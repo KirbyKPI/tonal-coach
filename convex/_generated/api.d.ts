@@ -48,6 +48,8 @@ import type * as coach_weekProgramming from "../coach/weekProgramming.js";
 import type * as coach_weekProgrammingDirect from "../coach/weekProgrammingDirect.js";
 import type * as coach_weekProgrammingHelpers from "../coach/weekProgrammingHelpers.js";
 import type * as coachAdmin from "../coachAdmin.js";
+import type * as coachAdminAuth from "../coachAdminAuth.js";
+import type * as coachAdminDebug from "../coachAdminDebug.js";
 import type * as coachDashboard from "../coachDashboard.js";
 import type * as contact from "../contact.js";
 import type * as crons from "../crons.js";
@@ -166,6 +168,8 @@ declare const fullApi: ApiFromModules<{
   "coach/weekProgrammingDirect": typeof coach_weekProgrammingDirect;
   "coach/weekProgrammingHelpers": typeof coach_weekProgrammingHelpers;
   coachAdmin: typeof coachAdmin;
+  coachAdminAuth: typeof coachAdminAuth;
+  coachAdminDebug: typeof coachAdminDebug;
   coachDashboard: typeof coachDashboard;
   contact: typeof contact;
   crons: typeof crons;
