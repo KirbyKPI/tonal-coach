@@ -552,6 +552,19 @@ export default defineSchema({
     .index("by_equipmentConfig", ["equipmentConfig"])
     .index("by_generationVersion", ["generationVersion"]),
 
+  /** Delegated view access — lets one user view another user's client profile dashboard. */
+  viewAccess: defineTable({
+    /** The user who is granted view access (the viewer). */
+    viewerUserId: v.id("users"),
+    /** The profile they can view. */
+    profileId: v.id("userProfiles"),
+    /** Who granted the access (the coach/admin). */
+    grantedBy: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_viewerUserId", ["viewerUserId"])
+    .index("by_profileId", ["profileId"]),
+
   /** Circuit breaker state for external API health tracking. Single-row table. */
   systemHealth: defineTable({
     service: v.string(), // "tonal"

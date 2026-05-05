@@ -1,12 +1,6 @@
-/**
- * Admin/debug/migration utilities for the coach system.
- * All internal mutations — not callable from the client.
- * Run via: npx convex run coachAdmin:<functionName> --prod
- */
-
+// Core profile admin operations (internal mutations only).
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
-
 /** List all profiles with their IDs, names, emails, and labels for debugging. */
 export const listAllProfiles = internalMutation({
   args: {},
@@ -198,5 +192,163 @@ export const cleanupDuplicates = internalMutation({
         eunice ? `Eunice (${eunice._id})` : null,
       ].filter(Boolean),
     };
+  },
+});
+
+/**
+ * List all profiles for a user email + show activeClientProfileId state.
+ * Helps diagnose broken profile pointers after auth consolidation.
+ */
+export const listUserProfiles = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, { email }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email.trim().toLowerCase()))
+      .first();
+    if (!user) return { error: "User not found" };
+
+    const profiles = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .collect();
+
+    // Check if activeClientProfileId points to a valid profile
+    let activeProfileValid = false;
+    let activeProfileName = "NONE SET";
+    if (user.activeClientProfileId) {
+      const active = await ctx.db.get(user.activeClientProfileId);
+      if (active && active.userId === user._id) {
+        activeProfileValid = true;
+        activeProfileName = active.profileData
+          ? `${active.profileData.firstName} ${active.profileData.lastName}`
+          : (active.clientLabel ?? "unnamed");
+      } else {
+        activeProfileName = active ? "WRONG USER" : "DELETED";
+      }
+    }
+
+    return {
+      userId: user._id,
+      activeClientProfileId: user.activeClientProfileId ?? "NOT SET",
+      activeProfileValid,
+      activeProfileName,
+      profiles: profiles.map((p) => ({
+        id: p._id,
+        name: p.profileData
+          ? `${p.profileData.firstName} ${p.profileData.lastName}`
+          : (p.clientLabel ?? "unnamed"),
+        tonalUserId: p.tonalUserId,
+        isCoachAccount: p.isCoachAccount ?? false,
+        hasTonalToken: !!p.tonalToken,
+        syncStatus: p.syncStatus ?? "none",
+      })),
+    };
+  },
+});
+
+/**
+ * Set activeClientProfileId for a user by email + profile name search.
+ * Usage: npx convex run coachAdmin:setActiveClient '{"email":"kirby@kpifit.com","profileName":"Adam"}' --prod
+ */
+export const setActiveClient = internalMutation({
+  args: { email: v.string(), profileName: v.string() },
+  handler: async (ctx, { email, profileName }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email.trim().toLowerCase()))
+      .first();
+    if (!user) throw new Error("User not found");
+
+    const profiles = await ctx.db
+      .query("userProfiles")
+      .withIndex("by_userId", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const match = profiles.find(
+      (p) =>
+        p.profileData?.firstName?.toLowerCase().includes(profileName.toLowerCase()) ||
+        p.clientLabel?.toLowerCase().includes(profileName.toLowerCase()),
+    );
+
+    if (!match) {
+      throw new Error(
+        `No profile matching "${profileName}" found. Available: ${profiles.map((p) => p.profileData?.firstName ?? p.clientLabel ?? "unnamed").join(", ")}`,
+      );
+    }
+
+    await ctx.db.patch(user._id, { activeClientProfileId: match._id });
+    return {
+      status: "active_profile_updated",
+      profileId: match._id,
+      profileName: match.profileData
+        ? `${match.profileData.firstName} ${match.profileData.lastName}`
+        : match.clientLabel,
+    };
+  },
+});
+
+/**
+ * Set activeClientProfileId by profile ID directly.
+ * Usage: npx convex run coachAdmin:setActiveClientById '{"profileId":"n578t71jsf9njp0mqbwt7z5vk985n1kv"}' --prod
+ */
+export const setActiveClientById = internalMutation({
+  args: { profileId: v.id("userProfiles") },
+  handler: async (ctx, { profileId }) => {
+    const profile = await ctx.db.get(profileId);
+    if (!profile) throw new Error("Profile not found");
+
+    await ctx.db.patch(profile.userId, { activeClientProfileId: profileId });
+
+    return {
+      status: "set",
+      profileId,
+      name: profile.profileData
+        ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
+        : (profile.clientLabel ?? "unnamed"),
+    };
+  },
+});
+
+/**
+ * Check token health for a specific profile.
+ * Shows whether the Tonal token is present, expired, and how long ago data was synced.
+ */
+export const checkProfileTokenHealth = internalMutation({
+  args: { profileId: v.id("userProfiles") },
+  handler: async (ctx, { profileId }) => {
+    const profile = await ctx.db.get(profileId);
+    if (!profile) return { error: "Profile not found" };
+
+    const now = Date.now();
+    const tokenExpiry = profile.tonalTokenExpiresAt ?? null;
+    const isExpired = tokenExpiry ? tokenExpiry < now : "unknown (no expiry set)";
+    const expiresIn = tokenExpiry
+      ? `${Math.round((tokenExpiry - now) / (60 * 60 * 1000))} hours`
+      : "unknown";
+
+    return {
+      profileId,
+      name: profile.profileData
+        ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
+        : (profile.clientLabel ?? "unnamed"),
+      tonalUserId: profile.tonalUserId,
+      hasTonalToken: !!profile.tonalToken,
+      tokenExpired: isExpired,
+      tokenExpiresIn: expiresIn,
+      syncStatus: profile.syncStatus ?? "none",
+      lastSyncedActivityDate: profile.lastSyncedActivityDate ?? "never",
+    };
+  },
+});
+/** Delete a specific profile by ID (admin only). */
+export const deleteProfile = internalMutation({
+  args: { profileId: v.id("userProfiles") },
+  handler: async (ctx, { profileId }) => {
+    const profile = await ctx.db.get(profileId);
+    if (!profile) return { error: "Profile not found" };
+    const name = (profile as Record<string, unknown>).name ?? "unknown";
+    await ctx.db.delete(profileId);
+    return { status: "deleted", profileName: name, profileId };
   },
 });

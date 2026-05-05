@@ -22,6 +22,7 @@ async function refreshAndPersist(
   ctx: ActionCtx,
   userId: Id<"users">,
   encryptedRefreshToken: string,
+  profileId?: Id<"userProfiles">,
 ): Promise<string> {
   const keyHex = process.env.TOKEN_ENCRYPTION_KEY;
   if (!keyHex) {
@@ -38,6 +39,7 @@ async function refreshAndPersist(
 
   await ctx.runMutation(internal.userProfiles.updateTonalToken, {
     userId,
+    profileId,
     tonalToken: encryptedToken,
     tonalRefreshToken: encryptedNewRefresh,
     tonalTokenExpiresAt: refreshed.expiresAt,
@@ -92,7 +94,7 @@ export async function withTokenRetry<T>(
 
     let freshToken: string;
     try {
-      freshToken = await refreshAndPersist(ctx, userId, profile.tonalRefreshToken);
+      freshToken = await refreshAndPersist(ctx, userId, profile.tonalRefreshToken, profileId);
     } catch {
       void ctx.runMutation(internal.userProfiles.releaseTokenRefreshLock, { userId });
       return markExpiredAndThrow(ctx, userId);

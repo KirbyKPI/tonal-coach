@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 import { usePageView } from "@/lib/analytics";
 import type {
   Activity,
@@ -57,7 +60,7 @@ export default function DashboardPage() {
   usePageView("dashboard_viewed");
 
   // If the coach stub profile is active, show the coach aggregate dashboard
-  const { activeProfile } = useActiveClient();
+  const { activeProfile, viewableProfiles } = useActiveClient();
   const isCoachStub =
     activeProfile?.isCoachAccount === true && activeProfile?.tonalUserId?.startsWith("coach-");
 
@@ -65,7 +68,24 @@ export default function DashboardPage() {
     return <CoachOverview />;
   }
 
+  // View-only user with no own profiles — redirect to first shared dashboard
+  if (!activeProfile && viewableProfiles.length > 0) {
+    return <ViewOnlyRedirect profileId={viewableProfiles[0].profileId} />;
+  }
+
   return <ClientDashboard />;
+}
+
+function ViewOnlyRedirect({ profileId }: { profileId: Id<"userProfiles"> }) {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace(`/dashboard/view/${profileId}`);
+  }, [router, profileId]);
+  return (
+    <div className="flex items-center justify-center py-20">
+      <p className="text-sm text-muted-foreground">Redirecting…</p>
+    </div>
+  );
 }
 
 function ClientDashboard() {

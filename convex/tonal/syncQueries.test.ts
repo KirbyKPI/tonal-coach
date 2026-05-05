@@ -70,7 +70,7 @@ describe("getCurrentStrengthScores", () => {
 
     const result = await t.query(internal.tonal.syncQueries.getCurrentStrengthScores, { userId });
     expect(result).toHaveLength(2);
-    const regions = result.map((r) => r.bodyRegion).sort();
+    const regions = result.map((r: { bodyRegion: string }) => r.bodyRegion).sort();
     expect(regions).toEqual(["lower", "upper"]);
   });
 

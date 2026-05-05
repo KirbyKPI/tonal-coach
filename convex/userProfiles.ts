@@ -92,15 +92,24 @@ export const setFirstAiWorkoutCompletedAt = internalMutation({
 export const updateTonalToken = internalMutation({
   args: {
     userId: v.id("users"),
+    profileId: v.optional(v.id("userProfiles")),
     tonalToken: v.string(),
     tonalRefreshToken: v.optional(v.string()),
     tonalTokenExpiresAt: v.optional(v.number()),
   },
-  handler: async (ctx, { userId, tonalToken, tonalRefreshToken, tonalTokenExpiresAt }) => {
-    const profile = await ctx.db
-      .query("userProfiles")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+  handler: async (
+    ctx,
+    { userId, profileId, tonalToken, tonalRefreshToken, tonalTokenExpiresAt },
+  ) => {
+    // Multi-client: update the specific profile when provided, not just the first one
+    let profile = profileId ? await ctx.db.get(profileId) : null;
+    if (profile && profile.userId !== userId) profile = null;
+    if (!profile) {
+      profile = await ctx.db
+        .query("userProfiles")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .first();
+    }
 
     if (!profile) throw new Error("User profile not found");
 
@@ -391,5 +400,3 @@ export const updateSyncStatus = internalMutation({
     await ctx.db.patch(profile._id, { syncStatus });
   },
 });
-
-// createCoachStub and getThreadStaleHours moved to userProfileHelpers.ts

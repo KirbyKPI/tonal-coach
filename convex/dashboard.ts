@@ -104,8 +104,7 @@ export const getTrainingFrequency = action({
       const activityTime = new Date(activity.activityTime).getTime();
       if (activityTime < thirtyDaysAgo) continue;
 
-      const area = activity.workoutPreview?.targetArea;
-      if (!area) continue;
+      const area = activity.workoutPreview?.targetArea || "General";
       counts[area] = (counts[area] ?? 0) + 1;
 
       // Track most recent date per area

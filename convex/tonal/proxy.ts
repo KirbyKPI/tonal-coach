@@ -20,6 +20,56 @@ import type {
   WorkoutActivityDetail,
 } from "./types";
 
+// /workout-activities → Activity mapping.
+// Tonal deprecated `/activities` (returns []). The replacement `/workout-activities`
+// returns flat fields; this adapter reshapes them into the nested `workoutPreview`
+// the rest of the codebase expects.
+
+interface WorkoutActivityListItem {
+  id: string;
+  userId: string;
+  workoutId: string;
+  workoutType: string;
+  beginTime: string;
+  endTime?: string;
+  totalDuration: number;
+  activeDuration?: number;
+  totalVolume: number;
+  totalConcentricWork?: number;
+  totalMovements?: number;
+  totalSets?: number;
+  totalReps?: number;
+  percentCompleted?: number;
+  deletedAt?: string | null;
+  [key: string]: unknown;
+}
+
+function workoutActivityToActivity(wa: WorkoutActivityListItem): Activity {
+  return {
+    activityId: wa.id,
+    userId: wa.userId,
+    activityTime: wa.beginTime,
+    activityType: "Workout",
+    workoutPreview: {
+      activityId: wa.id,
+      workoutId: wa.workoutId,
+      workoutTitle: "",
+      programName: "",
+      coachName: "",
+      level: "",
+      targetArea: "",
+      isGuidedWorkout: false,
+      workoutType: wa.workoutType,
+      beginTime: wa.beginTime,
+      totalDuration: wa.totalDuration,
+      totalVolume: wa.totalVolume,
+      totalWork: wa.totalConcentricWork ?? 0,
+      totalAchievements: 0,
+      activityType: "Workout",
+    },
+  };
+}
+
 /** Resolve encrypted token + tonalUserId for a given Convex user. */
 export async function withTonalToken(
   ctx: ActionCtx,
@@ -76,9 +126,7 @@ export async function cachedFetch<T>(
     const data = await fetcher();
     const now = Date.now();
 
-    // Truncate large arrays before caching to stay within Convex's
-    // 8192 element limit per array field. The full data is still
-    // returned to the caller; only the cached copy is truncated.
+    // Truncate large arrays before caching (Convex 8192 element limit)
     const MAX_CACHE_ARRAY_LENGTH = 500;
     const cacheData =
       Array.isArray(data) && data.length > MAX_CACHE_ARRAY_LENGTH
@@ -94,9 +142,7 @@ export async function cachedFetch<T>(
         expiresAt: now + ttl,
       });
     } catch (cacheErr) {
-      // If caching fails (e.g., data still too large), log and continue.
-      // The caller still gets fresh data; it just won't be cached.
-      console.warn(`cachedFetch(${dataType}): cache write failed, returning fresh data`, cacheErr);
+      console.warn(`cachedFetch(${dataType}): cache write failed`, cacheErr);
     }
 
     // Record success for circuit breaker
@@ -226,8 +272,15 @@ export const fetchWorkoutHistory = internalAction({
           userId,
           dataType: `workoutHistory:${tonalUserId}:${limit}`,
           ttl: CACHE_TTLS.workoutHistory,
-          fetcher: () =>
-            tonalFetch<Activity[]>(token, `/v6/users/${tonalUserId}/activities?limit=${limit}`),
+          fetcher: async () => {
+            // Tonal deprecated /activities (returns []). Use /workout-activities instead.
+            const raw = await tonalFetch<WorkoutActivityListItem[]>(
+              token,
+              `/v6/users/${tonalUserId}/workout-activities?limit=${limit}`,
+            );
+            // Filter out soft-deleted entries and map to legacy Activity shape
+            return raw.filter((wa) => !wa.deletedAt).map(workoutActivityToActivity);
+          },
         }),
       profileId,
     ),

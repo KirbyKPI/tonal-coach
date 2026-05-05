@@ -11,6 +11,7 @@ import type { Id } from "../../convex/_generated/dataModel";
 export function useActiveClient() {
   const activeProfile = useQuery(api.clientProfiles.getActiveProfile);
   const allProfiles = useQuery(api.clientProfiles.listMyProfiles);
+  const viewableProfiles = useQuery(api.viewAccess.getViewableProfiles);
   const setActiveProfile = useMutation(api.clientProfiles.setActiveProfile);
 
   const switchToClient = async (profileId: Id<"userProfiles">) => {
@@ -20,6 +21,8 @@ export function useActiveClient() {
   return {
     activeProfile,
     allProfiles: allProfiles ?? [],
+    /** Profiles from other users that this user has been granted view access to. */
+    viewableProfiles: viewableProfiles ?? [],
     switchToClient,
     isMultiClient: (allProfiles?.length ?? 0) > 1,
   };

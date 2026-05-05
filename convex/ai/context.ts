@@ -223,7 +223,9 @@ export async function buildTrainingSnapshot(
 
   // Priority 7: Strength scores
   if (scores.length > 0) {
-    const scoreLines = scores.map((s) => `${s.bodyRegion}: ${s.score}`).join(", ");
+    const scoreLines = scores
+      .map((s: { bodyRegion: string; score: number }) => `${s.bodyRegion}: ${s.score}`)
+      .join(", ");
     sections.push({
       priority: 7,
       lines: [
@@ -351,8 +353,10 @@ export async function buildTrainingSnapshot(
         }
       }
 
-      const completedTonalIds = new Set(
-        activities.map((a) => a.tonalWorkoutId).filter((id): id is string => id !== undefined),
+      const completedTonalIds = new Set<string>(
+        activities
+          .map((a: { tonalWorkoutId?: string }) => a.tonalWorkoutId)
+          .filter((id): id is string => id !== undefined),
       );
 
       const now = new Date();
@@ -364,7 +368,7 @@ export async function buildTrainingSnapshot(
         todayDayIndex,
         completedTonalIds,
         tonalWorkoutIdByPlanId,
-        activityDates: activities.map((a) => a.date),
+        activityDates: activities.map((a: { date: string }) => a.date),
         todayDate,
       });
 
