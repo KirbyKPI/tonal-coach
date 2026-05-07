@@ -3,16 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation } from "convex/react";
-import {
-  AlertCircle,
-  Check,
-  ChevronRight,
-  LayoutDashboard,
-  Pencil,
-  Wifi,
-  WifiOff,
-  X,
-} from "lucide-react";
+import { AlertCircle, Check, LayoutDashboard, Pencil, Wifi, WifiOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -40,13 +31,13 @@ export interface ClientOverview {
 }
 
 /**
- * Display name shown on the card. Prefers the Tonal profile's real first +
- * last name; falls back to the coach-entered clientLabel when Tonal hasn't
- * filled in profile data yet.
+ * Display name shown on the card. Prefers the coach-entered clientLabel;
+ * falls back to the Tonal profile name when no label has been set.
  */
 export function displayNameFor(client: ClientOverview): string {
+  if (client.clientLabel) return client.clientLabel;
   const tonalName = [client.firstName, client.lastName].filter(Boolean).join(" ");
-  return tonalName || client.clientLabel;
+  return tonalName || "Unnamed";
 }
 
 function initialsFor(client: ClientOverview): string {
@@ -83,7 +74,6 @@ export function ClientCard({
 }) {
   const renameProfile = useMutation(api.clientProfiles.renameClientProfile);
   const displayName = displayNameFor(client);
-  const hasTonalName = !!(client.firstName || client.lastName);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(client.clientLabel);
   const [saving, setSaving] = useState(false);
@@ -101,9 +91,8 @@ export function ClientCard({
     if (!editing) setDraft(client.clientLabel);
   }, [client.clientLabel, editing]);
 
-  // Rename only makes sense before Tonal connects — once it does, the card
-  // shows the Tonal profile name and any clientLabel value is ignored.
-  const canRename = !client.isCoachAccount && !hasTonalName;
+  // Coach can always rename client profiles (clientLabel overrides Tonal name).
+  const canRename = !client.isCoachAccount;
 
   const commitRename = async () => {
     const trimmed = draft.trim();
