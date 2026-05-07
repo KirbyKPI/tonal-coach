@@ -40,6 +40,7 @@ interface ClientProgress {
     byArea: { area: string; count: number }[];
   };
   activeDates: string[];
+  dateVolume?: Record<string, number>;
   readiness: Record<string, number> | null;
   alerts: string[];
   daysSinceLastWorkout: number | null;

@@ -10,6 +10,7 @@ interface CalendarProps {
   clients: {
     name: string;
     activeDates: string[];
+    dateVolume?: Record<string, number>;
   }[];
 }
 
@@ -24,24 +25,32 @@ function getLast30Days(): string[] {
   return days;
 }
 
-function intensityClass(count: number): string {
-  if (count === 0) return "bg-muted/40";
-  if (count === 1) return "bg-emerald-400/40";
-  if (count === 2) return "bg-emerald-400/70";
+/** Volume-based intensity: lighter green for low volume, darker for high. */
+function intensityClass(volume: number): string {
+  if (volume === 0) return "bg-muted/40";
+  if (volume < 5000) return "bg-emerald-400/40";
+  if (volume < 15000) return "bg-emerald-400/70";
   return "bg-emerald-400";
 }
 
 export function CoachActivityCalendar({ clients }: CalendarProps) {
   const days = getLast30Days();
 
-  // Build a lookup: client index → date → count
-  const countMap = new Map<string, Map<string, number>>();
+  // Build a lookup: client name → date → volume
+  const volumeMap = new Map<string, Map<string, number>>();
   for (const c of clients) {
     const dateMap = new Map<string, number>();
-    for (const d of c.activeDates) {
-      dateMap.set(d, (dateMap.get(d) ?? 0) + 1);
+    if (c.dateVolume) {
+      for (const [date, vol] of Object.entries(c.dateVolume)) {
+        dateMap.set(date, vol);
+      }
+    } else {
+      // Fallback: mark active dates with a default volume
+      for (const d of c.activeDates) {
+        dateMap.set(d, 5000);
+      }
     }
-    countMap.set(c.name, dateMap);
+    volumeMap.set(c.name, dateMap);
   }
 
   return (
@@ -49,19 +58,19 @@ export function CoachActivityCalendar({ clients }: CalendarProps) {
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-foreground">Activity — Last 30 Days</h3>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>Less</span>
+          <span>Low vol.</span>
           <div className="flex gap-0.5">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className={`size-2.5 rounded-sm ${intensityClass(i)}`} />
+            {[0, 2000, 8000, 20000].map((v) => (
+              <div key={v} className={`size-2.5 rounded-sm ${intensityClass(v)}`} />
             ))}
           </div>
-          <span>More</span>
+          <span>High vol.</span>
         </div>
       </div>
 
       <div className="space-y-2 overflow-x-auto">
         {clients.map((client) => {
-          const dateMap = countMap.get(client.name);
+          const dateMap = volumeMap.get(client.name);
           const totalDays = dateMap ? Array.from(dateMap.values()).filter((v) => v > 0).length : 0;
 
           return (
@@ -71,13 +80,13 @@ export function CoachActivityCalendar({ clients }: CalendarProps) {
               </span>
               <div className="flex gap-0.5">
                 {days.map((day) => {
-                  const count = dateMap?.get(day) ?? 0;
+                  const vol = dateMap?.get(day) ?? 0;
                   const dayNum = parseInt(day.slice(8, 10));
                   return (
                     <div
                       key={day}
-                      className={`size-3.5 rounded-sm ${intensityClass(count)} transition-colors`}
-                      title={`${client.name} — ${day}: ${count} workout${count !== 1 ? "s" : ""}`}
+                      className={`size-3.5 rounded-sm ${intensityClass(vol)} transition-colors`}
+                      title={`${client.name} — ${day}: ${vol > 0 ? `${vol.toLocaleString()} lbs` : "Rest day"}`}
                     >
                       {dayNum === 1 || dayNum === 15 ? (
                         <span className="sr-only">{day}</span>

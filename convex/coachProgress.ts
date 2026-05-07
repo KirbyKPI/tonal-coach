@@ -54,17 +54,20 @@ export const getAggregateProgress = query({
           )
           .collect();
 
-        // Activity calendar — set of dates with workouts
+        // Activity calendar — set of dates with workouts + per-date volume
         const activeDates: string[] = [];
+        const dateVolume: Record<string, number> = {};
         const areaCount: Record<string, number> = {};
         let totalVolume = 0;
         let totalDuration = 0;
 
         for (const w of workouts) {
           if (!activeDates.includes(w.date)) activeDates.push(w.date);
+          const vol = w.totalVolume ?? 0;
+          dateVolume[w.date] = (dateVolume[w.date] ?? 0) + vol;
           const area = w.targetArea || "General";
           areaCount[area] = (areaCount[area] ?? 0) + 1;
-          totalVolume += w.totalVolume ?? 0;
+          totalVolume += vol;
           totalDuration += w.totalDuration ?? 0;
         }
 
@@ -131,6 +134,7 @@ export const getAggregateProgress = query({
               .sort((a, b) => b.count - a.count),
           },
           activeDates,
+          dateVolume,
           readiness: readiness
             ? {
                 chest: readiness.chest,
