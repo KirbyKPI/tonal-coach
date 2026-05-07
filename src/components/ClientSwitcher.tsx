@@ -12,18 +12,18 @@ import type { Doc, Id } from "../../convex/_generated/dataModel";
 /**
  * Display label for a profile. Priority is:
  *   1. Coach's own profile → always "KPI Coach Overview"
- *   2. Tonal firstName + lastName → the real name from their Tonal account
- *   3. clientLabel → what the coach typed when adding the client (used before
- *      Tonal connects; superseded once real profile data arrives)
+ *   2. clientLabel → the coach-chosen display name
+ *   3. Tonal firstName + lastName → fallback from Tonal account
  *   4. tonalEmail → last-ditch identifier
  *   5. fallback
  */
 function getProfileLabel(profile: Doc<"userProfiles">, fallback = "Unnamed"): string {
   if (profile.isCoachAccount) return "KPI Coach Overview";
+  if (profile.clientLabel) return profile.clientLabel;
   const tonalName = [profile.profileData?.firstName, profile.profileData?.lastName]
     .filter(Boolean)
     .join(" ");
-  return tonalName || profile.clientLabel || profile.tonalEmail || fallback;
+  return tonalName || profile.tonalEmail || fallback;
 }
 
 /**

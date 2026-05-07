@@ -61,9 +61,11 @@ export const getMe = query({
       email: user?.email as string | undefined,
       hasTonalProfile: !!profile,
       onboardingCompleted: !!profile?.onboardingData?.completedAt || isCoach,
-      tonalName: profile?.profileData
-        ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
-        : (profile?.clientLabel ?? undefined),
+      tonalName:
+        profile?.clientLabel ??
+        (profile?.profileData
+          ? `${profile.profileData.firstName} ${profile.profileData.lastName}`.trim()
+          : undefined),
       tonalEmail: profile?.tonalEmail,
       tonalTokenExpired,
       syncStatus: profile?.syncStatus,
