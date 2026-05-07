@@ -109,12 +109,13 @@ export function CoachOverview() {
           </p>
           <div className="flex flex-wrap gap-2">
             {data.fallingBehind.map((c) => (
-              <span
+              <Link
                 key={c.profileId}
-                className="rounded-full bg-rose-500/10 px-3 py-1 text-xs font-medium text-rose-400 border border-rose-500/20"
+                href={`/dashboard/view/${c.profileId}`}
+                className="rounded-full bg-rose-500/10 px-3 py-1 text-xs font-medium text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
               >
                 {c.name} — {c.daysSinceLastWorkout}d ago
-              </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -140,12 +141,14 @@ export function CoachOverview() {
             {data.clients.map((client) => (
               <tr key={client.profileId} className="transition-colors hover:bg-muted/20">
                 <td className="px-4 py-3">
-                  <div>
-                    <p className="font-medium text-foreground">{client.name}</p>
+                  <Link href={`/dashboard/view/${client.profileId}`} className="block group">
+                    <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      {client.name}
+                    </p>
                     {client.level && (
                       <p className="text-xs text-muted-foreground capitalize">{client.level}</p>
                     )}
-                  </div>
+                  </Link>
                 </td>
                 <td className="px-4 py-3 text-center font-mono text-foreground">
                   {client.workoutsLast7d}

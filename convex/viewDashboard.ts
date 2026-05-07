@@ -42,9 +42,11 @@ export const getViewProfileSummary = query({
     if (!access) return null;
 
     const { profile } = access;
-    const name = profile.profileData
-      ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
-      : (profile.clientLabel ?? "Unknown");
+    const name =
+      profile.clientLabel ??
+      (profile.profileData
+        ? `${profile.profileData.firstName} ${profile.profileData.lastName}`.trim()
+        : "Unknown");
 
     return {
       name,

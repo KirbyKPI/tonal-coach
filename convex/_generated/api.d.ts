@@ -51,6 +51,7 @@ import type * as coachAdmin from "../coachAdmin.js";
 import type * as coachAdminAuth from "../coachAdminAuth.js";
 import type * as coachAdminDebug from "../coachAdminDebug.js";
 import type * as coachDashboard from "../coachDashboard.js";
+import type * as coachProgress from "../coachProgress.js";
 import type * as contact from "../contact.js";
 import type * as crons from "../crons.js";
 import type * as dashboard from "../dashboard.js";
@@ -171,6 +172,7 @@ declare const fullApi: ApiFromModules<{
   coachAdminAuth: typeof coachAdminAuth;
   coachAdminDebug: typeof coachAdminDebug;
   coachDashboard: typeof coachDashboard;
+  coachProgress: typeof coachProgress;
   contact: typeof contact;
   crons: typeof crons;
   dashboard: typeof dashboard;

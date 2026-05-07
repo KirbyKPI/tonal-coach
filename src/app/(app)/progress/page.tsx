@@ -9,6 +9,8 @@ import { useActionData } from "@/hooks/useActionData";
 import { AsyncCard } from "@/components/AsyncCard";
 import { StrengthOverview } from "@/features/progress/StrengthOverview";
 import { TrainingStatsCompact } from "@/features/progress/TrainingStatsCompact";
+import { CoachProgress } from "@/features/progress/CoachProgress";
+import { useActiveClient } from "@/hooks/useActiveClient";
 
 const NAV_PILL =
   "rounded-full bg-muted/50 px-4 py-2 text-xs text-muted-foreground ring-1 ring-border transition-all hover:bg-muted/80 hover:text-foreground";
@@ -29,6 +31,19 @@ interface ProgressMetrics {
 export default function ProgressPage() {
   usePageView("progress_viewed");
 
+  const { activeProfile } = useActiveClient();
+  const isCoachStub =
+    activeProfile?.isCoachAccount === true && activeProfile?.tonalUserId?.startsWith("coach-");
+
+  if (isCoachStub) {
+    return <CoachProgress />;
+  }
+
+  return <ClientProgress />;
+}
+
+/** Individual client progress view (hooks are always called). */
+function ClientProgress() {
   const strengthData = useActionData<{
     scores: StrengthScore[];
     distribution: StrengthDistribution;

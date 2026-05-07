@@ -121,9 +121,11 @@ export const getCoachOverview = query({
 
     const clientSummaries = await Promise.all(
       clients.map(async (profile) => {
-        const name = profile.profileData
-          ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
-          : (profile.clientLabel ?? "Unnamed");
+        const name =
+          profile.clientLabel ??
+          (profile.profileData
+            ? `${profile.profileData.firstName} ${profile.profileData.lastName}`.trim()
+            : "Unnamed");
 
         // Use profileId index to scope data to the correct client
         const recentWorkouts = await ctx.db
