@@ -69,8 +69,9 @@ export default function DashboardPage() {
   }
 
   // View-only user with no own profiles — redirect to first shared dashboard
-  if (!activeProfile && viewableProfiles.length > 0) {
-    return <ViewOnlyRedirect profileId={viewableProfiles[0].profileId} />;
+  const firstViewable = viewableProfiles[0];
+  if (!activeProfile && firstViewable) {
+    return <ViewOnlyRedirect profileId={firstViewable.profileId} />;
   }
 
   return <ClientDashboard />;

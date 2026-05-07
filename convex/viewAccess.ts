@@ -48,7 +48,7 @@ export const getViewableProfiles = query({
       }),
     );
 
-    return profiles.filter(Boolean);
+    return profiles.filter((p): p is NonNullable<typeof p> => p !== null);
   },
 });
 

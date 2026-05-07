@@ -218,10 +218,10 @@ async function fetchProfileData(
 
   try {
     // Fetch the Tonal user profile to verify identity
-    const apiProfile: Record<string, unknown> = await ctx.runAction(
-      internal.tonal.proxy.fetchUserProfile,
-      { userId, profileId },
-    );
+    const apiProfile = (await ctx.runAction(internal.tonal.proxy.fetchUserProfile, {
+      userId,
+      profileId,
+    })) as unknown as Record<string, unknown>;
 
     // Fetch activities count
     let activityCount = 0;
@@ -313,22 +313,10 @@ export const rawTonalApiTest = internalAction({
     }
 
     const base = `https://api.tonal.com/v6/users/${tid}`;
-    const results = await Promise.all([
-      probe(`${base}/activities?limit=5`),
-      probe(`${base}/activities?limit=50`),
-      probe(`${base}/activities`),
-      probe(`${base}/workout-activities`),
-      probe(`${base}/strength-scores`),
-      probe(`${base}/strength-scores/current`),
-      probe(`${base}/strength-scores/history?limit=10`),
-      probe(`${base}/muscle-readiness/current`),
-      probe(`${base}/external-activities?limit=5`),
-    ]);
-
-    const labels = [
+    const paths = [
       "activities?limit=5",
       "activities?limit=50",
-      "activities (no limit)",
+      "activities",
       "workout-activities",
       "strength-scores",
       "strength-scores/current",
@@ -336,11 +324,11 @@ export const rawTonalApiTest = internalAction({
       "muscle-readiness/current",
       "external-activities?limit=5",
     ];
-
+    const results = await Promise.all(paths.map((p) => probe(`${base}/${p}`)));
     const endpoints: Record<string, unknown> = {};
-    for (let i = 0; i < labels.length; i++) {
-      endpoints[labels[i]] = results[i];
-    }
+    paths.forEach((label, i) => {
+      endpoints[label] = results[i];
+    });
 
     return {
       profileName: name,
