@@ -24,9 +24,11 @@ export const getFullProfile = query({
     return {
       userId,
       email: user?.email,
-      tonalName: profile?.profileData
-        ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
-        : undefined,
+      tonalName:
+        profile?.clientLabel ??
+        (profile?.profileData
+          ? `${profile.profileData.firstName} ${profile.profileData.lastName}`.trim()
+          : undefined),
       profileData: profile?.profileData ?? null,
       tonalConnectedAt: profile?.tonalConnectedAt ?? null,
       tonalEmail: profile?.tonalEmail,

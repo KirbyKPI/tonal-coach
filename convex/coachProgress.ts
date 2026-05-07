@@ -33,9 +33,11 @@ export const getAggregateProgress = query({
 
     const results = await Promise.all(
       clients.map(async (profile) => {
-        const name = profile.profileData
-          ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
-          : (profile.clientLabel ?? "Unnamed");
+        const name =
+          profile.clientLabel ??
+          (profile.profileData
+            ? `${profile.profileData.firstName} ${profile.profileData.lastName}`.trim()
+            : "Unnamed");
 
         // Strength history (last 20 snapshots)
         const strengthHistory = await ctx.db

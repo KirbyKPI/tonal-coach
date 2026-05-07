@@ -34,9 +34,11 @@ export const getViewableProfiles = query({
         const profile = await ctx.db.get(g.profileId);
         if (!profile) return null;
 
-        const name = profile.profileData
-          ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
-          : (profile.clientLabel ?? "Unknown");
+        const name =
+          profile.clientLabel ??
+          (profile.profileData
+            ? `${profile.profileData.firstName} ${profile.profileData.lastName}`.trim()
+            : "Unknown");
 
         return {
           profileId: profile._id,
@@ -170,9 +172,11 @@ export const adminGrantAccess = mutation({
     const profile = await ctx.db.get(profileId);
     if (!profile) return { error: "Profile not found" };
 
-    const name = profile.profileData
-      ? `${profile.profileData.firstName} ${profile.profileData.lastName}`
-      : (profile.clientLabel ?? "Unknown");
+    const name =
+      profile.clientLabel ??
+      (profile.profileData
+        ? `${profile.profileData.firstName} ${profile.profileData.lastName}`.trim()
+        : "Unknown");
 
     // Check for existing grant
     const existing = await ctx.db
