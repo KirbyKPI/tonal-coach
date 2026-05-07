@@ -13,12 +13,13 @@ interface CalendarProps {
   }[];
 }
 
-function getDaysInMonth(year: number, month: number): string[] {
+function getLast30Days(): string[] {
   const days: string[] = [];
-  const date = new Date(year, month, 1);
-  while (date.getMonth() === month) {
-    days.push(date.toISOString().slice(0, 10));
-    date.setDate(date.getDate() + 1);
+  const now = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0, 10));
   }
   return days;
 }
@@ -31,11 +32,7 @@ function intensityClass(count: number): string {
 }
 
 export function CoachActivityCalendar({ clients }: CalendarProps) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const days = getDaysInMonth(year, month);
-  const monthLabel = now.toLocaleString("default", { month: "long", year: "numeric" });
+  const days = getLast30Days();
 
   // Build a lookup: client index → date → count
   const countMap = new Map<string, Map<string, number>>();
@@ -50,7 +47,7 @@ export function CoachActivityCalendar({ clients }: CalendarProps) {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Activity — {monthLabel}</h3>
+        <h3 className="text-sm font-semibold text-foreground">Activity — Last 30 Days</h3>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <span>Less</span>
           <div className="flex gap-0.5">
@@ -101,11 +98,11 @@ export function CoachActivityCalendar({ clients }: CalendarProps) {
       <div className="mt-1.5 flex items-center gap-3">
         <span className="w-24 shrink-0" />
         <div className="flex gap-0.5">
-          {days.map((day) => {
+          {days.map((day, i) => {
             const d = parseInt(day.slice(8, 10));
             return (
               <div key={day} className="flex size-3.5 items-center justify-center">
-                {d % 5 === 1 ? <span className="text-[8px] text-muted-foreground">{d}</span> : null}
+                {i % 5 === 0 ? <span className="text-[8px] text-muted-foreground">{d}</span> : null}
               </div>
             );
           })}
