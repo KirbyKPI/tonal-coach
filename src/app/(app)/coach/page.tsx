@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, RefreshCw, Users } from "lucide-react";
+import { BellOff, Loader2, Plus, RefreshCw, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ export default function CoachPage() {
   const clients = useQuery(api.coachDashboard.getClientOverviews);
   const setActive = useMutation(api.clientProfiles.setActiveProfile);
   const addClient = useMutation(api.clientProfiles.addClientProfile);
+  const markAllAlertsRead = useMutation(api.checkIns.markAllRead);
   const router = useRouter();
 
   const [query, setQuery] = useState("");
@@ -24,6 +25,19 @@ export default function CoachPage() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [adding, setAdding] = useState(false);
+  const [clearingAlerts, setClearingAlerts] = useState(false);
+
+  const handleClearAlerts = async () => {
+    if (clearingAlerts) return;
+    setClearingAlerts(true);
+    try {
+      await markAllAlertsRead({});
+    } catch (err) {
+      console.error("Failed to clear alerts", err);
+    } finally {
+      setClearingAlerts(false);
+    }
+  };
 
   const handleSwitch = async (profileId: Id<"userProfiles">) => {
     await setActive({ profileId });
@@ -35,7 +49,10 @@ export default function CoachPage() {
     if (!newName.trim()) return;
     setAdding(true);
     try {
-      const profileId = await addClient({ clientLabel: newName.trim(), tonalEmail: newEmail.trim() });
+      const profileId = await addClient({
+        clientLabel: newName.trim(),
+        tonalEmail: newEmail.trim(),
+      });
       setNewName("");
       setNewEmail("");
       setShowAddForm(false);
@@ -74,39 +91,66 @@ export default function CoachPage() {
         </div>
 
         <div className="flex items-center gap-4">
+          {alertCount > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleClearAlerts}
+              disabled={clearingAlerts}
+              title={`Dismiss all ${alertCount} alert${alertCount === 1 ? "" : "s"} across every client`}
+            >
+              {clearingAlerts ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <BellOff className="size-4" />
+              )}
+              Clear {alertCount} alert{alertCount === 1 ? "" : "s"}
+            </Button>
+          )}
           <Button size="sm" onClick={() => setShowAddForm((v) => !v)}>
             <Plus className="size-4" />
             Add Client
           </Button>
 
-        {hasAnyClients && (
-          <div className="flex gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-foreground">{clients!.length}</p>
-              <p className="text-xs text-muted-foreground">Clients</p>
+          {hasAnyClients && (
+            <div className="flex gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-foreground">{clients!.length}</p>
+                <p className="text-xs text-muted-foreground">Clients</p>
+              </div>
+              <div className="w-px bg-border" />
+              <div>
+                <p className="text-2xl font-bold text-green-500">{connectedCount}</p>
+                <p className="text-xs text-muted-foreground">Connected</p>
+              </div>
+              {alertCount > 0 && (
+                <>
+                  <div className="w-px bg-border" />
+                  <button
+                    type="button"
+                    onClick={handleClearAlerts}
+                    disabled={clearingAlerts}
+                    className="text-left transition-opacity hover:opacity-70 disabled:opacity-50"
+                    title="Click to clear all alerts"
+                  >
+                    <p className="text-2xl font-bold text-orange-500">{alertCount}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {clearingAlerts ? "Clearing…" : "Alerts (click to clear)"}
+                    </p>
+                  </button>
+                </>
+              )}
             </div>
-            <div className="w-px bg-border" />
-            <div>
-              <p className="text-2xl font-bold text-green-500">{connectedCount}</p>
-              <p className="text-xs text-muted-foreground">Connected</p>
-            </div>
-            {alertCount > 0 && (
-              <>
-                <div className="w-px bg-border" />
-                <div>
-                  <p className="text-2xl font-bold text-orange-500">{alertCount}</p>
-                  <p className="text-xs text-muted-foreground">Alerts</p>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+          )}
         </div>
       </div>
 
       {/* Add Client Form */}
       {showAddForm && (
-        <form onSubmit={handleAddClient} className="rounded-xl border border-border bg-card p-4 space-y-3">
+        <form
+          onSubmit={handleAddClient}
+          className="rounded-xl border border-border bg-card p-4 space-y-3"
+        >
           <p className="text-sm font-medium text-foreground">Add a new client</p>
           <div className="flex gap-3">
             <Input
@@ -158,7 +202,9 @@ export default function CoachPage() {
           <Users className="mx-auto size-10 text-muted-foreground mb-3" />
           <p className="text-foreground font-medium">No client accounts yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Click &ldquo;Add Client&rdquo; above to add your first client, or share <span className="font-medium text-foreground">tonal.kpifit.com</span> — new signups appear here automatically.
+            Click &ldquo;Add Client&rdquo; above to add your first client, or share{" "}
+            <span className="font-medium text-foreground">tonal.kpifit.com</span> — new signups
+            appear here automatically.
           </p>
         </div>
       )}
