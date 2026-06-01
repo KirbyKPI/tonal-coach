@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMutation } from "convex/react";
-import { AlertCircle, Check, LayoutDashboard, Pencil, Wifi, WifiOff, X } from "lucide-react";
+import { AlertCircle, Check, LayoutDashboard, Link2, Pencil, Wifi, WifiOff, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -73,11 +73,42 @@ export function ClientCard({
   onSwitch: (id: Id<"userProfiles">) => void;
 }) {
   const renameProfile = useMutation(api.clientProfiles.renameClientProfile);
+  const createInvite = useMutation(api.tonalInvites.createInvite);
   const displayName = displayNameFor(client);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(client.clientLabel);
   const [saving, setSaving] = useState(false);
+  const [inviteState, setInviteState] = useState<
+    | { kind: "idle" }
+    | { kind: "creating" }
+    | { kind: "copied"; url: string }
+    | { kind: "error"; message: string }
+  >({ kind: "idle" });
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleShareInvite = async () => {
+    setInviteState({ kind: "creating" });
+    try {
+      const { code } = await createInvite({ clientProfileId: client.profileId });
+      const url = `${window.location.origin}/connect-tonal/${code}`;
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        // Clipboard may be unavailable in some browsers — still surface the URL.
+      }
+      setInviteState({ kind: "copied", url });
+      // Reset the chip back to idle after a few seconds so the coach can
+      // generate another invite if needed.
+      setTimeout(() => {
+        setInviteState((s) => (s.kind === "copied" ? { kind: "idle" } : s));
+      }, 5000);
+    } catch (err) {
+      setInviteState({
+        kind: "error",
+        message: (err as Error)?.message ?? "Could not create invite",
+      });
+    }
+  };
 
   useEffect(() => {
     if (editing && inputRef.current) {
@@ -218,12 +249,19 @@ export function ClientCard({
       {/* Action buttons */}
       <div className="mt-4 space-y-2">
         {!client.hasConnectedTonal ? (
-          <Link
-            href={`/connect-tonal?profileId=${client.profileId}`}
-            className="block rounded-lg bg-primary py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors duration-150"
-          >
-            Connect Tonal
-          </Link>
+          <>
+            <Link
+              href={`/connect-tonal?profileId=${client.profileId}`}
+              className="block rounded-lg bg-primary py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors duration-150"
+            >
+              Connect Tonal
+            </Link>
+            <InviteShareControl
+              state={inviteState}
+              onShare={handleShareInvite}
+              variant="primary-secondary"
+            />
+          </>
         ) : (
           <>
             <button
@@ -265,9 +303,84 @@ export function ClientCard({
                 Schedule
               </Link>
             </div>
+
+            {/* Even on connected clients, a reshare option is useful when
+                the stored Tonal token expires and they need to reconnect. */}
+            <InviteShareControl
+              state={inviteState}
+              onShare={handleShareInvite}
+              variant="reconnect"
+            />
           </>
         )}
       </div>
     </div>
+  );
+}
+
+// ─── Invite-link share button (used in both connected + unconnected states) ──
+
+function InviteShareControl({
+  state,
+  onShare,
+  variant,
+}: {
+  state:
+    | { kind: "idle" }
+    | { kind: "creating" }
+    | { kind: "copied"; url: string }
+    | { kind: "error"; message: string };
+  onShare: () => void;
+  variant: "primary-secondary" | "reconnect";
+}) {
+  if (state.kind === "copied") {
+    return (
+      <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+        <div className="flex items-center gap-1.5 text-primary">
+          <Check className="size-3.5" />
+          Invite link copied
+        </div>
+        <div className="mt-1 truncate font-mono text-[10px] text-muted-foreground">{state.url}</div>
+        <p className="mt-1 text-[10px] text-muted-foreground">
+          Send to the client — link is valid for 7 days, reusable until then.
+        </p>
+      </div>
+    );
+  }
+
+  if (state.kind === "error") {
+    return (
+      <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+        {state.message}
+        <button
+          type="button"
+          onClick={onShare}
+          className="ml-2 underline decoration-destructive/40 underline-offset-2 hover:decoration-destructive"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  const label =
+    variant === "primary-secondary"
+      ? state.kind === "creating"
+        ? "Generating invite…"
+        : "Share invite link instead"
+      : state.kind === "creating"
+        ? "Generating reconnect link…"
+        : "Share reconnect link";
+
+  return (
+    <button
+      type="button"
+      onClick={onShare}
+      disabled={state.kind === "creating"}
+      className="flex w-full items-center justify-center gap-1 rounded-lg border border-muted-foreground/20 bg-transparent px-2 py-2 text-xs text-muted-foreground hover:border-muted-foreground/40 hover:text-foreground transition-colors duration-150 disabled:opacity-60"
+    >
+      <Link2 className="size-3.5 shrink-0" />
+      {label}
+    </button>
   );
 }

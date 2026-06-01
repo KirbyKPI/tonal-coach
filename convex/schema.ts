@@ -574,4 +574,36 @@ export default defineSchema({
     circuitOpenedAt: v.optional(v.number()),
     lastSuccessAt: v.optional(v.number()),
   }).index("by_service", ["service"]),
+
+  /**
+   * Shareable links so a client can connect their own Tonal account without
+   * the coach holding their password. Coach generates a code; client opens
+   * /connect-tonal/<code>, types their Tonal email + password, the token is
+   * attached to the right client profile. Reusable until expiresAt (7d
+   * default) so a fat-fingered first attempt can be retried; we still record
+   * `usedAt` for audit but don't enforce single-use.
+   */
+  tonalConnectInvites: defineTable({
+    /** Short, URL-safe code embedded in the share link. Globally unique. */
+    code: v.string(),
+    /** The coach (auth user) who generated the invite. */
+    coachUserId: v.id("users"),
+    /** The pre-existing stub profile the connected token gets attached to. */
+    clientProfileId: v.id("userProfiles"),
+    /** Display name shown on the public page ("Connect Tonal for Anna Johnson"). */
+    clientLabel: v.string(),
+    createdAt: v.number(),
+    /** Unix ms — link rejected past this point. */
+    expiresAt: v.number(),
+    /** Most recent successful redemption — null until first use. Reusable
+     *  while not yet expired, so a single invite can survive a typo'd
+     *  password attempt. */
+    usedAt: v.optional(v.number()),
+    /** Coach can manually revoke a leaked or stale link without waiting for
+     *  expiry — query path treats revoked links the same as expired. */
+    revokedAt: v.optional(v.number()),
+  })
+    .index("by_code", ["code"])
+    .index("by_coachUserId", ["coachUserId"])
+    .index("by_clientProfileId", ["clientProfileId"]),
 });

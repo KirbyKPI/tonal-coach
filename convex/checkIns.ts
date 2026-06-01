@@ -137,15 +137,14 @@ export const markAllRead = mutation({
     const userId = await getEffectiveUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const profile = await ctx.db
+    const profiles = await ctx.db
       .query("userProfiles")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    if (!profile) throw new Error("User profile not found");
+      .collect();
+    if (profiles.length === 0) throw new Error("User profile not found");
 
-    await ctx.db.patch(profile._id, {
-      checkInsReadAllBeforeAt: Date.now(),
-    });
+    const now = Date.now();
+    await Promise.all(profiles.map((p) => ctx.db.patch(p._id, { checkInsReadAllBeforeAt: now })));
   },
 });
 
