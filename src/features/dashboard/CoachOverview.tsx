@@ -1,19 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import {
   AlertCircle,
   ArrowDown,
   ArrowUp,
+  BellOff,
   Dumbbell,
+  Loader2,
   Minus,
   TrendingUp,
   Users,
   Wifi,
 } from "lucide-react";
-import { Loader2 } from "lucide-react";
 
 function StatCard({
   label,
@@ -39,6 +41,20 @@ function StatCard({
 
 export function CoachOverview() {
   const data = useQuery(api.coachDashboard.getCoachOverview);
+  const markAllAlertsRead = useMutation(api.checkIns.markAllRead);
+  const [clearingAlerts, setClearingAlerts] = useState(false);
+
+  const handleClearAlerts = async () => {
+    if (clearingAlerts) return;
+    setClearingAlerts(true);
+    try {
+      await markAllAlertsRead({});
+    } catch (err) {
+      console.error("Failed to clear alerts", err);
+    } finally {
+      setClearingAlerts(false);
+    }
+  };
 
   if (data === undefined) {
     return (
@@ -92,11 +108,27 @@ export function CoachOverview() {
       {/* Alerts */}
       {data.totalAlerts > 0 && (
         <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4">
-          <div className="flex items-center gap-2 text-orange-400">
-            <AlertCircle className="size-4" />
-            <span className="text-sm font-medium">
-              {data.totalAlerts} unread check-in{data.totalAlerts > 1 ? "s" : ""} across clients
-            </span>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-orange-400">
+              <AlertCircle className="size-4" />
+              <span className="text-sm font-medium">
+                {data.totalAlerts} unread check-in{data.totalAlerts > 1 ? "s" : ""} across clients
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleClearAlerts}
+              disabled={clearingAlerts}
+              className="inline-flex items-center gap-1.5 rounded-md border border-orange-500/30 bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-300 hover:bg-orange-500/20 hover:text-orange-200 transition-colors duration-150 disabled:opacity-60"
+              title="Mark every unread check-in across all your clients as read"
+            >
+              {clearingAlerts ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <BellOff className="size-3" />
+              )}
+              {clearingAlerts ? "Clearing…" : "Clear all"}
+            </button>
           </div>
         </div>
       )}

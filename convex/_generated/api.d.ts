@@ -107,6 +107,7 @@ import type * as tonal_transforms from "../tonal/transforms.js";
 import type * as tonal_types from "../tonal/types.js";
 import type * as tonal_validation from "../tonal/validation.js";
 import type * as tonal_workoutCatalogSync from "../tonal/workoutCatalogSync.js";
+import type * as tonalInvites from "../tonalInvites.js";
 import type * as userProfileHelpers from "../userProfileHelpers.js";
 import type * as userProfiles from "../userProfiles.js";
 import type * as users from "../users.js";
@@ -228,6 +229,7 @@ declare const fullApi: ApiFromModules<{
   "tonal/types": typeof tonal_types;
   "tonal/validation": typeof tonal_validation;
   "tonal/workoutCatalogSync": typeof tonal_workoutCatalogSync;
+  tonalInvites: typeof tonalInvites;
   userProfileHelpers: typeof userProfileHelpers;
   userProfiles: typeof userProfiles;
   users: typeof users;
